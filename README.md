@@ -243,12 +243,41 @@ set QT_QPA_PLATFORM=offscreen && dist\LLMTestBench.exe   :: старт GUI бе�
 `_print()`, поэтому модуль прописан в `hiddenimports` спеки: без этого кнопка
 «Печать» в собранном приложении падала бы с `ModuleNotFoundError`.
 
+## Установщик MSI
+
+Собирается из того же `dist/LLMTestBench.exe` — сначала `build_app.py`, потом:
+
+```bat
+.venv\Scripts\python.exe make_msi.py
+```
+
+Готовый файл — `dist/LLMTestBench-1.0.0.msi` (~56 МБ). Версия берётся из
+`llmtestbench/__init__.py`, текст лицензии — из `LICENSE`: скрипт перекладывает
+его в `installer/License.rtf`, и этот RTF в репозитории не хранится.
+
+Нужен WiX Toolset 4 и расширение `WixToolset.UI.wixext` **той же версии**, что
+сам WiX (иначе сборка падает на разборе разметки мастера):
+
+```bat
+dotnet tool install --global wix
+wix extension add -g WixToolset.UI.wixext/4.0.6
+```
+
+Ставится **в профиль пользователя** — `%LOCALAPPDATA%\Programs\LLMTestBench`,
+права администратора не нужны, ярлык кладётся в меню «Пуск». Так сделано
+намеренно: приложение пишет `config.json`, логи и результаты рядом с `.exe`
+(см. `app_root()` в `llmtestbench/config.py`), а в `Program Files` без прав
+администратора писать нельзя. Устройство пакета и то, что проверено на
+собранном MSI, описаны в шапке `installer/LLMTestBench.wxs`.
+
 ## Структура
 
 ```
 main.py               точка входа (GUI) и --selfcheck
 run_tests.py          CLI-прогон наборов
 build_app.py          сборка PyInstaller
+make_msi.py           сборка MSI через WiX (см. «Установщик MSI»)
+installer/            разметка WiX: LLMTestBench.wxs (+ License.rtf при сборке)
 build_haystack.py     сборка «стога» для context_long
 check_*.py            проверочные скрипты (см. раздел «Проверки»)
 config.json           настройки (раздел 7 ТЗ)
@@ -387,6 +416,10 @@ git commit -m "содержание"
 ```
 
 Правки идут на ветке `review/<тема>` и вливаются в `master` после вердикта в
-`ЖУРНАЛ-ревью.md` (раздел 4 `REVIEW_STANDARDS.md`). Появится удалённый
-репозиторий — туда переедет и CI (`.github/workflows/ci.yml` уже готов), и
-схема с Pull Request.
+`ЖУРНАЛ-ревью.md` (раздел 4 `REVIEW_STANDARDS.md`).
+
+## Лицензия
+
+MIT — текст в `LICENSE`. Коротко: можно брать, менять, встраивать в свои
+проекты и продавать, при условии что копирайт и текст лицензии остаются
+в копиях. Гарантий никаких — программа поставляется «как есть».

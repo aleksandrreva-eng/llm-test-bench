@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Разметка MSI-установщика LLM Test Bench (WiX Toolset 4).
+
+  Собирать не напрямую, а через `make_msi.py`: он подставляет версию из
+  `llmtestbench/__init__.py` и готовит RTF с текстом лицензии. Прямой вызов:
+
+    wix build -ext WixToolset.UI.wixext -d Version=1.0.0 ^
+        installer\LLMTestBench.wxs -o dist\LLMTestBench-1.0.0.msi
+
+  Почему установка в профиль пользователя (`Scope="perUser"`), а не в
+  Program Files: приложение портативное по устройству — оно пишет config.json,
+  логи, результаты и базу истории рядом с .exe (`app_root()` в
+  `llmtestbench/config.py`). В Program Files писать нельзя без прав
+  администратора, и приложение сломалось бы на первом же сохранении настроек.
+  `%LOCALAPPDATA%\Programs` — то же место, куда ставятся VS Code и Chrome.
+
+  Проверено на собранном пакете (29.09.2026, Windows 11, учётка без прав
+  администратора):
+    - `msiexec /i ... /qn` проходит молча, без запроса UAC, код возврата 0;
+    - файлы — в `%LOCALAPPDATA%\Programs\LLMTestBench`, ярлык — в
+      `%APPDATA%\Microsoft\Windows\Start Menu\Programs\LLM Test Bench`;
+    - `msiexec /x` убирает папку, ярлык и ключ `HKCU\Software\LLMTestBench`;
+    - запись в «Программах и компонентах» при этом оказалась в
+      `HKLM\Software\Wow6432Node\...\Uninstall`, хотя лог установки сообщает,
+      что свойство ALLUSERS удалено (то есть установка в профиль). Расхождение
+      не объяснено; на работу приложения не влияет, но при жалобах на установку
+      начинать стоит отсюда.
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
+
+  <Package
+      Name="LLM Test Bench"
+      Manufacturer="aleksandrreva-eng"
+      Version="$(Version)"
+      UpgradeCode="F7555639-C024-4ACA-B6C6-06B503732A0F"
+      Scope="perUser"
+      Language="1049"
+      Codepage="1251"
+      Compressed="yes">
+    <!-- Language/Codepage — русские: строки пакета кириллические, а по умолчанию
+         база MSI собирается в 1252 (западноевропейская), и WiX падает с WIX0311
+         «символы не помещаются в кодовую страницу». 1251 — кириллица. -->
+
+    <SummaryInformation
+        Description="Стенд тестирования локальных GGUF-моделей на llama.cpp"
+        Manufacturer="aleksandrreva-eng" />
+
+    <!-- Обновление поверх старой версии. Понижение запрещено: откат MSI не
+         умеет, и «поставил 1.0.0 поверх 1.1.0» оставило бы смесь файлов. -->
+    <MajorUpgrade DowngradeErrorMessage="Установлена более новая версия LLM Test Bench. Удалите её перед установкой этой." />
+
+    <MediaTemplate EmbedCab="yes" />
+
+    <Icon Id="AppIcon" SourceFile="..\icon.ico" />
+    <Property Id="ARPPRODUCTICON" Value="AppIcon" />
+    <Property Id="ARPHELPLINK" Value="https://github.com/aleksandrreva-eng/llm-test-bench" />
+    <!-- ARPNOMODIFY здесь задавать нельзя: его уже определяет WixUI_InstallDir,
+         и повторное объявление роняет сборку с WIX0091 (дубль символа). -->
+
+    <!-- ALLUSERS/MSIINSTALLPERUSER задавать бессмысленно: Scope="perUser" выше
+         помечает пакет как LUA-совместимый (установка без прав администратора),
+         а для такого пакета Windows Installer сам удаляет ALLUSERS и пишет в лог
+         «MSIINSTALLPERUSER property is not valid for UAC compliant package.
+         Ignoring the MSIINSTALLPERUSER property». Проверено на собранном MSI:
+         с этими свойствами и без них поведение одинаковое. -->
+
+    <!-- Мастер установки: приветствие, лицензия, выбор папки, прогресс. -->
+    <ui:WixUI Id="WixUI_InstallDir" InstallDirectory="INSTALLFOLDER" />
+    <WixVariable Id="WixUILicenseRtf" Value="License.rtf" />
+
+    <Feature Id="Main" Title="LLM Test Bench" Level="1" AllowAbsent="no">
+      <ComponentGroupRef Id="AppFiles" />
+      <ComponentRef Id="StartMenuShortcut" />
+    </Feature>
+  </Package>
+
+  <!-- Куда ставим: %LOCALAPPDATA%\Programs\LLMTestBench -->
+  <Fragment>
+    <StandardDirectory Id="LocalAppDataFolder">
+      <Directory Id="ProgramsFolder" Name="Programs">
+        <Directory Id="INSTALLFOLDER" Name="LLMTestBench" />
+      </Directory>
+    </StandardDirectory>
+  </Fragment>
+
+  <!-- Что ставим: один самодостаточный .exe и текст лицензии рядом. -->
+  <Fragment>
+    <ComponentGroup Id="AppFiles" Directory="INSTALLFOLDER">
+      <Component Id="MainExecutable" Guid="1383A261-98A9-42A4-BA71-B3CFA4CF2760">
+        <File Id="LLMTestBenchExe" Source="..\dist\LLMTestBench.exe" KeyPath="yes" />
+      </Component>
+      <Component Id="LicenseFile" Guid="9C1B4E27-5A83-4F1D-9E60-2B7A8D3C4F51">
+        <File Id="LicenseTxt" Source="..\LICENSE" Name="LICENSE.txt" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+
+  <!-- Ярлык в меню «Пуск» -->
+  <Fragment>
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Directory Id="AppMenuFolder" Name="LLM Test Bench" />
+    </StandardDirectory>
+  </Fragment>
+
+  <Fragment>
+    <!-- У компонента с ярлыком нет файла-ключа, поэтому ключом служит запись
+         в реестре: без KeyPath WiX отказывается собирать компонент. -->
+    <Component Id="StartMenuShortcut" Directory="AppMenuFolder"
+               Guid="4E7A2D18-6B95-4C3A-8F27-1D5E9A6B3C82">
+      <Shortcut Id="AppShortcut"
+                Name="LLM Test Bench"
+                Description="Стенд тестирования локальных GGUF-моделей"
+                Target="[INSTALLFOLDER]LLMTestBench.exe"
+                WorkingDirectory="INSTALLFOLDER"
+                Icon="AppIcon" />
+      <RemoveFolder Id="RemoveAppMenuFolder" Directory="AppMenuFolder" On="uninstall" />
+      <RegistryValue Root="HKCU" Key="Software\LLMTestBench"
+                     Name="installed" Type="integer" Value="1" KeyPath="yes" />
+    </Component>
+  </Fragment>
+
+</Wix>
