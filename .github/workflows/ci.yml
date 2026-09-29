@@ -57,6 +57,11 @@ jobs:
     env:
       # Окна в CI рисовать некуда: GUI-проверки работают в offscreen-режиме.
       QT_QPA_PLATFORM: offscreen
+      # На windows-latest консоль по умолчанию в cp1252, и печать русского
+      # текста в check_*.py падает с UnicodeEncodeError ещё до первой
+      # проверки. UTF-8-режим снимает вопрос разом, без правки самих скриптов.
+      PYTHONUTF8: "1"
+      PYTHONIOENCODING: utf-8
     steps:
       - uses: actions/checkout@v4
 
