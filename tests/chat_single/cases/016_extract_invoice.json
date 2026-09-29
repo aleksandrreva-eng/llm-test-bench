@@ -1,0 +1,36 @@
+{
+  "id": "chat_single_016",
+  "name": "Извлечь данные из текста в JSON",
+  "prompt": "Вытащи данные из текста и верни ТОЛЬКО валидный JSON без markdown-обёртки и пояснений: {\"invoice\": <номер счёта, строка>, \"amount\": <сумма, число>, \"currency\": <валюта, строка>, \"paid\": <оплачен ли счёт, boolean>}.\n\nТекст: «Счёт №INV-2291 на сумму 48 750 рублей выставлен третьего марта. Клиент подтвердил оплату пятого марта, деньги пришли на счёт.»",
+  "expected": {
+    "type": "json_schema",
+    "schema": {
+      "type": "object",
+      "required": ["invoice", "amount", "currency", "paid"],
+      "additionalProperties": false,
+      "properties": {
+        "invoice": {
+          "type": "string",
+          "const": "INV-2291"
+        },
+        "amount": {
+          "type": "number",
+          "const": 48750
+        },
+        "currency": {
+          "type": "string",
+          "minLength": 2
+        },
+        "paid": {
+          "type": "boolean",
+          "const": true
+        }
+      }
+    }
+  },
+  "params": {
+    "max_tokens": 256
+  },
+  "tags": ["format", "json", "extraction", "hard"],
+  "weight": 2.0
+}

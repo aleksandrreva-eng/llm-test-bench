@@ -1,0 +1,15 @@
+{
+  "id": "instruction_following",
+  "name": "Жёсткое следование инструкциям",
+  "version": "2.0.0",
+  "description": "В каждом кейсе несколько ограничений одновременно: формат, длина, запреты, порядок. Проверяются все условия сразу (all_of) — модель, выполнившая три условия из четырёх, задание не выполнила. Именно на таких кейсах расходятся модели одного размера: знание есть у всех, а дисциплина — не у всех",
+  "cases_count": 8,
+  "metrics": ["latency_ms", "tokens_per_sec", "tokens_in", "tokens_out"],
+  "scoring": "none",
+  "default_params": {
+    "temperature": 0.0,
+    "seed": 42,
+    "max_tokens": 512
+  },
+  "tags": ["instructions", "format", "hard"]
+}

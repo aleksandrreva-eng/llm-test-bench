@@ -1,0 +1,32 @@
+{
+  "id": "context_32000_edges",
+  "name": "Два кода по краям длинного текста, ~32K",
+  "generator": "needle_in_haystack",
+  "target_tokens": 32000,
+  "needles": [
+    {
+      "text": "КОВАЛЧУК-7742",
+      "position": 0.05
+    },
+    {
+      "text": "СКЛАД-3310",
+      "position": 0.95,
+      "template": "Служебный код доступа к складу в этом документе — {needle}."
+    }
+  ],
+  "question": "Назови оба кода доступа, которые есть в документе: сначала код к архиву, потом код к складу. Ответь двумя кодами через запятую.",
+  "expected": {
+    "type": "all_of",
+    "checks": [
+      {
+        "type": "contains_all",
+        "values": ["КОВАЛЧУК-7742", "СКЛАД-3310"]
+      }
+    ]
+  },
+  "params": {
+    "max_tokens": 96
+  },
+  "tags": ["context", "needle", "hard"],
+  "weight": 2.0
+}

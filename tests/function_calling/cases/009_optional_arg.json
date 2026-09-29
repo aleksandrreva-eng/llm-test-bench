@@ -1,0 +1,29 @@
+{
+  "id": "function_calling_009",
+  "name": "Необязательный аргумент не выдумывать",
+  "prompt": "Функция resize_image(path: string, width: integer, height: integer, keep_aspect: boolean) меняет размер изображения. Параметр keep_aspect необязательный: если в задаче про него ничего не сказано, передавать его не нужно.\n\nЗадача: уменьши картинку F:\\Pictures\\cover.png до ширины 1024 и высоты 768.\n\nВерни ТОЛЬКО валидный JSON с аргументами функции, без markdown-обёртки и пояснений.",
+  "expected": {
+    "type": "json_schema",
+    "schema": {
+      "type": "object",
+      "required": ["path", "width", "height"],
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "const": "F:\\Pictures\\cover.png"
+        },
+        "width": {
+          "type": "integer",
+          "const": 1024
+        },
+        "height": {
+          "type": "integer",
+          "const": 768
+        }
+      }
+    }
+  },
+  "tags": ["function-calling", "optional", "hard"],
+  "weight": 2.0
+}

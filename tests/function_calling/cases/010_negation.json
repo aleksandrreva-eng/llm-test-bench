@@ -1,0 +1,29 @@
+{
+  "id": "function_calling_010",
+  "name": "Отрицание в задаче меняет аргумент",
+  "prompt": "Функция send_email(to: string, subject: string, draft: boolean) готовит письмо. Если draft = true, письмо сохраняется как черновик и не отправляется.\n\nЗадача: подготовь письмо на адрес boss@example.com с темой Отпуск, но НЕ отправляй его — сохрани как черновик.\n\nВерни ТОЛЬКО валидный JSON с аргументами функции, без markdown-обёртки и пояснений.",
+  "expected": {
+    "type": "json_schema",
+    "schema": {
+      "type": "object",
+      "required": ["to", "subject", "draft"],
+      "additionalProperties": false,
+      "properties": {
+        "to": {
+          "type": "string",
+          "const": "boss@example.com"
+        },
+        "subject": {
+          "type": "string",
+          "pattern": "Отпуск"
+        },
+        "draft": {
+          "type": "boolean",
+          "const": true
+        }
+      }
+    }
+  },
+  "tags": ["function-calling", "negation", "hard"],
+  "weight": 2.0
+}

@@ -1,0 +1,217 @@
+<!-- ===================== ВКЛАДКА "СРАВНЕНИЕ" ===================== -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 800" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="1280" height="800" fill="#1e1e1e" rx="8"/>
+  
+  <!-- Заголовок -->
+  <rect width="1280" height="36" fill="#2d2d30" rx="8"/>
+  <rect y="28" width="1280" height="8" fill="#2d2d30"/>
+  <text x="14" y="24" fill="#cccccc" font-size="13" font-weight="600">LLM Test Bench — Сравнение тестов</text>
+  <circle cx="1240" cy="18" r="6" fill="#5a5a5a"/>
+  <circle cx="1258" cy="18" r="6" fill="#5a5a5a"/>
+  <line x1="1232" y1="10" x2="1248" y2="26" stroke="#888" stroke-width="1.5"/>
+  
+  <!-- Вкладки -->
+  <rect y="36" width="1280" height="34" fill="#252526"/>
+  <text x="30" y="58" fill="#9d9d9d" font-size="13">Тестирование</text>
+  <text x="170" y="58" fill="#9d9d9d" font-size="13">Сервер</text>
+  <text x="250" y="58" fill="#9d9d9d" font-size="13">История</text>
+  <rect x="330" y="36" width="100" height="34" fill="#1e1e1e"/>
+  <text x="348" y="58" fill="#ffffff" font-size="13" font-weight="600">Сравнение</text>
+
+  <!-- Панель инструментов -->
+  <rect x="8" y="78" width="1264" height="50" fill="#252526" rx="4"/>
+  <text x="20" y="108" fill="#ffffff" font-size="13" font-weight="600">Сравнение 3 тестов</text>
+  
+  <rect x="240" y="88" width="150" height="28" fill="#3e3e42" rx="3"/>
+  <text x="258" y="106" fill="#cccccc" font-size="12">📊 Только различия</text>
+  <rect x="400" y="88" width="150" height="28" fill="#3e3e42" rx="3"/>
+  <text x="418" y="106" fill="#cccccc" font-size="12">📈 Показать графики</text>
+  <rect x="560" y="88" width="180" height="28" fill="#0e639c" rx="3"/>
+  <text x="580" y="106" fill="#ffffff" font-size="12">💾 Экспорт в HTML</text>
+  <rect x="750" y="88" width="150" height="28" fill="#3e3e42" rx="3"/>
+  <text x="768" y="106" fill="#cccccc" font-size="12">📄 Экспорт в CSV</text>
+  <rect x="910" y="88" width="140" height="28" fill="#3e3e42" rx="3"/>
+  <text x="932" y="106" fill="#cccccc" font-size="12">🖨 Печать</text>
+  <rect x="1170" y="88" width="90" height="28" fill="#3e3e42" rx="3"/>
+  <text x="1186" y="106" fill="#cccccc" font-size="12">✕ Закрыть</text>
+
+  <!-- Сводная таблица -->
+  <rect x="8" y="138" width="1264" height="440" fill="#252526" rx="4"/>
+  
+  <!-- Заголовок таблицы -->
+  <rect x="16" y="146" width="1248" height="40" fill="#2d2d30"/>
+  <text x="30" y="172" fill="#cccccc" font-size="12" font-weight="600">Параметр</text>
+  
+  <!-- Колонки тестов -->
+  <rect x="280" y="146" width="320" height="40" fill="#094771"/>
+  <text x="300" y="164" fill="#ffffff" font-size="12" font-weight="600">qwen2.5-7b</text>
+  <text x="300" y="179" fill="#b0b0b0" font-size="10">chat_single · 23.09 14:12</text>
+  
+  <rect x="610" y="146" width="320" height="40" fill="#094771"/>
+  <text x="630" y="164" fill="#ffffff" font-size="12" font-weight="600">llama-3.1-8b</text>
+  <text x="630" y="179" fill="#b0b0b0" font-size="10">chat_single · 23.09 14:15</text>
+  
+  <rect x="940" y="146" width="320" height="40" fill="#094771"/>
+  <text x="960" y="164" fill="#ffffff" font-size="12" font-weight="600">gemma-2-9b</text>
+  <text x="960" y="179" fill="#b0b0b0" font-size="10">chat_single · 23.09 14:18</text>
+
+  <!-- Строка: Модель -->
+  <rect x="16" y="186" width="1248" height="30" fill="#1e1e1e"/>
+  <text x="30" y="206" fill="#9cdcfe" font-size="12">Модель</text>
+  <text x="300" y="206" fill="#ffffff" font-size="12">qwen2.5-7b-instruct-Q4_K_M</text>
+  <text x="630" y="206" fill="#ffffff" font-size="12">llama-3.1-8b-Q5_K_M</text>
+  <text x="960" y="206" fill="#ffffff" font-size="12">gemma-2-9b-it-Q4_K_M</text>
+
+  <!-- Строка: Размер -->
+  <rect x="16" y="216" width="1248" height="30" fill="#252526"/>
+  <text x="30" y="236" fill="#9cdcfe" font-size="12">Размер файла</text>
+  <text x="300" y="236" fill="#ffffff" font-size="12">7.6 GB</text>
+  <text x="630" y="236" fill="#ffffff" font-size="12">5.7 GB</text>
+  <text x="960" y="236" fill="#ffffff" font-size="12">5.4 GB</text>
+
+  <!-- Строка: Контекст -->
+  <rect x="16" y="246" width="1248" height="30" fill="#1e1e1e"/>
+  <text x="30" y="266" fill="#9cdcfe" font-size="12">Контекст</text>
+  <text x="300" y="266" fill="#ffffff" font-size="12">8192</text>
+  <text x="630" y="266" fill="#ffffff" font-size="12">4096</text>
+  <text x="960" y="266" fill="#ffffff" font-size="12">8192</text>
+
+  <!-- Строка: Temp -->
+  <rect x="16" y="276" width="1248" height="30" fill="#252526"/>
+  <text x="30" y="296" fill="#9cdcfe" font-size="12">Temperature</text>
+  <text x="300" y="296" fill="#ffffff" font-size="12">0.7</text>
+  <text x="630" y="296" fill="#ffffff" font-size="12">0.8</text>
+  <text x="960" y="296" fill="#ffffff" font-size="12">0.7</text>
+
+  <!-- Строка: Прогонов -->
+  <rect x="16" y="306" width="1248" height="30" fill="#1e1e1e"/>
+  <text x="30" y="326" fill="#9cdcfe" font-size="12">Прогонов</text>
+  <text x="300" y="326" fill="#ffffff" font-size="12">3</text>
+  <text x="630" y="326" fill="#ffffff" font-size="12">3</text>
+  <text x="960" y="326" fill="#ffffff" font-size="12">3</text>
+
+  <!-- Строка: Tokens/sec (лучшее значение выделено) -->
+  <rect x="16" y="336" width="1248" height="30" fill="#252526"/>
+  <text x="30" y="356" fill="#9cdcfe" font-size="12">Tokens/sec (avg)</text>
+  <text x="300" y="356" fill="#ffffff" font-size="12">45.7</text>
+  <rect x="610" y="342" width="320" height="18" fill="#1a4d1a" opacity="0.5" rx="2"/>
+  <text x="630" y="356" fill="#4ec9b0" font-size="12" font-weight="600">52.3 ★</text>
+  <text x="960" y="356" fill="#ffffff" font-size="12">41.2</text>
+
+  <!-- Строка: Latency -->
+  <rect x="16" y="366" width="1248" height="30" fill="#1e1e1e"/>
+  <text x="30" y="386" fill="#9cdcfe" font-size="12">Latency (avg)</text>
+  <text x="300" y="386" fill="#ffffff" font-size="12">1205 ms</text>
+  <rect x="610" y="372" width="320" height="18" fill="#1a4d1a" opacity="0.5" rx="2"/>
+  <text x="630" y="386" fill="#4ec9b0" font-size="12" font-weight="600">1050 ms ★</text>
+  <text x="960" y="386" fill="#ffffff" font-size="12">1340 ms</text>
+
+  <!-- Строка: Startup time -->
+  <rect x="16" y="396" width="1248" height="30" fill="#252526"/>
+  <text x="30" y="416" fill="#9cdcfe" font-size="12">Время загрузки модели</text>
+  <text x="300" y="416" fill="#ffffff" font-size="12">8200 ms</text>
+  <text x="630" y="416" fill="#ffffff" font-size="12">6100 ms</text>
+  <text x="960" y="416" fill="#ffffff" font-size="12">7400 ms</text>
+
+  <!-- Строка: VRAM -->
+  <rect x="16" y="426" width="1248" height="30" fill="#1e1e1e"/>
+  <text x="30" y="446" fill="#9cdcfe" font-size="12">VRAM (peak)</text>
+  <text x="300" y="446" fill="#ffffff" font-size="12">6.2 GB</text>
+  <text x="630" y="446" fill="#ffffff" font-size="12">5.8 GB</text>
+  <text x="960" y="446" fill="#ffffff" font-size="12">5.5 GB</text>
+
+  <!-- Строка: Качество -->
+  <rect x="16" y="456" width="1248" height="30" fill="#252526"/>
+  <text x="30" y="476" fill="#9cdcfe" font-size="12">Качество (golden set)</text>
+  <text x="300" y="476" fill="#ffffff" font-size="12">7/10</text>
+  <text x="630" y="476" fill="#ffffff" font-size="12">8/10</text>
+  <rect x="940" y="462" width="320" height="18" fill="#1a4d1a" opacity="0.5" rx="2"/>
+  <text x="960" y="476" fill="#4ec9b0" font-size="12" font-weight="600">9/10 ★</text>
+
+  <!-- Строка: Ошибки -->
+  <rect x="16" y="486" width="1248" height="30" fill="#1e1e1e"/>
+  <text x="30" y="506" fill="#9cdcfe" font-size="12">Ошибки / таймауты</text>
+  <text x="300" y="506" fill="#4ec9b0" font-size="12">0</text>
+  <text x="630" y="506" fill="#4ec9b0" font-size="12">0</text>
+  <text x="960" y="506" fill="#4ec9b0" font-size="12">0</text>
+
+  <!-- Строка: Итоговый рейтинг -->
+  <rect x="16" y="516" width="1248" height="36" fill="#2d2d30"/>
+  <text x="30" y="539" fill="#ffffff" font-size="13" font-weight="600">Итоговый рейтинг</text>
+  <text x="300" y="539" fill="#dcdcaa" font-size="14" font-weight="600">2 место</text>
+  <text x="630" y="539" fill="#dcdcaa" font-size="14" font-weight="600">1 место 🏆</text>
+  <text x="960" y="539" fill="#dcdcaa" font-size="14" font-weight="600">3 место</text>
+
+  <!-- Графики (превью) -->
+  <rect x="8" y="586" width="630" height="180" fill="#252526" rx="4"/>
+  <text x="20" y="608" fill="#ffffff" font-size="13" font-weight="600">Tokens/sec по прогонам</text>
+  <rect x="20" y="616" width="606" height="140" fill="#1e1e1e" rx="3"/>
+  
+  <!-- Ось Y -->
+  <line x1="50" y1="626" x2="50" y2="746" stroke="#3e3e42"/>
+  <line x1="50" y1="746" x2="616" y2="746" stroke="#3e3e42"/>
+  <text x="30" y="632" fill="#808080" font-size="9">60</text>
+  <text x="30" y="682" fill="#808080" font-size="9">45</text>
+  <text x="30" y="746" fill="#808080" font-size="9">30</text>
+  
+  <!-- Линия qwen2.5-7b -->
+  <polyline points="80,700 200,690 320,695 440,698 560,692" 
+            stroke="#4ec9b0" stroke-width="2" fill="none"/>
+  <circle cx="80" cy="700" r="3" fill="#4ec9b0"/>
+  <circle cx="200" cy="690" r="3" fill="#4ec9b0"/>
+  <circle cx="320" cy="695" r="3" fill="#4ec9b0"/>
+  <circle cx="440" cy="698" r="3" fill="#4ec9b0"/>
+  <circle cx="560" cy="692" r="3" fill="#4ec9b0"/>
+  
+  <!-- Линия llama-3.1-8b -->
+  <polyline points="80,672 200,668 320,670 440,665 560,670" 
+            stroke="#569cd6" stroke-width="2" fill="none"/>
+  <circle cx="80" cy="672" r="3" fill="#569cd6"/>
+  <circle cx="200" cy="668" r="3" fill="#569cd6"/>
+  <circle cx="320" cy="670" r="3" fill="#569cd6"/>
+  <circle cx="440" cy="665" r="3" fill="#569cd6"/>
+  <circle cx="560" cy="670" r="3" fill="#569cd6"/>
+  
+  <!-- Линия gemma-2-9b -->
+  <polyline points="80,710 200,708 320,712 440,715 560,710" 
+            stroke="#dcdcaa" stroke-width="2" fill="none"/>
+  <circle cx="80" cy="710" r="3" fill="#dcdcaa"/>
+  <circle cx="200" cy="708" r="3" fill="#dcdcaa"/>
+  <circle cx="320" cy="712" r="3" fill="#dcdcaa"/>
+  <circle cx="440" cy="715" r="3" fill="#dcdcaa"/>
+  <circle cx="560" cy="710" r="3" fill="#dcdcaa"/>
+  
+  <!-- Легенда -->
+  <rect x="450" y="626" width="12" height="3" fill="#4ec9b0"/>
+  <text x="470" y="630" fill="#cccccc" font-size="10">qwen2.5</text>
+  <rect x="530" y="626" width="12" height="3" fill="#569cd6"/>
+  <text x="550" y="630" fill="#cccccc" font-size="10">llama-3.1</text>
+  <rect x="600" y="626" width="12" height="3" fill="#dcdcaa"/>
+  <text x="618" y="630" fill="#cccccc" font-size="10">gemma-2</text>
+
+  <!-- График 2 -->
+  <rect x="646" y="586" width="626" height="180" fill="#252526" rx="4"/>
+  <text x="658" y="608" fill="#ffffff" font-size="13" font-weight="600">Latency по прогонам</text>
+  <rect x="658" y="616" width="606" height="140" fill="#1e1e1e" rx="3"/>
+  
+  <line x1="688" y1="626" x2="688" y2="746" stroke="#3e3e42"/>
+  <line x1="688" y1="746" x2="1254" y2="746" stroke="#3e3e42"/>
+  <text x="668" y="632" fill="#808080" font-size="9">1500</text>
+  <text x="668" y="682" fill="#808080" font-size="9">1250</text>
+  <text x="668" y="746" fill="#808080" font-size="9">1000</text>
+  
+  <!-- Линия qwen2.5-7b -->
+  <polyline points="718,700 838,690 958,695 1078,698 1198,692" 
+            stroke="#4ec9b0" stroke-width="2" fill="none"/>
+  <!-- Линия llama-3.1-8b -->
+  <polyline points="718,715 838,712 958,708 1078,710 1198,712" 
+            stroke="#569cd6" stroke-width="2" fill="none"/>
+  <!-- Линия gemma-2-9b -->
+  <polyline points="718,678 838,682 958,680 1078,684 1198,680" 
+            stroke="#dcdcaa" stroke-width="2" fill="none"/>
+
+  <!-- Статус-бар -->
+  <rect x="8" y="784" width="1264" height="12" fill="#007acc"/>
+  <text x="16" y="793" fill="#ffffff" font-size="10">Сравнение · 3 теста · экспорт: comparison_20260923_150000.html</text>
+  <text x="1180" y="793" fill="#ffffff" font-size="10">v1.0.0</text>
+</svg>

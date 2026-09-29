@@ -1,0 +1,16 @@
+{
+  "id": "agent_tools_005",
+  "name": "Выбор инструмента между похожими",
+  "prompt": "Доступны инструменты:\n- get_weather(city: string) — узнать погоду в городе\n- multiply(a: number, b: number) — умножить два числа\n- search_files(path: string, mask: string) — найти файлы по маске\n- send_email(to: string, subject: string) — отправить письмо\n- get_time(city: string) — узнать время в городе\n\nЗадача: Который сейчас час в Токио?\n\nОтветь ТОЛЬКО валидным JSON вида {\"name\": \"<инструмент>\", \"arguments\": {...}} без markdown-обёртки.",
+  "expected": {
+    "type": "tool_call",
+    "tool_call": {
+      "name": "get_time",
+      "arguments": {
+        "city": "Токио"
+      }
+    }
+  },
+  "tags": ["tools", "disambiguation"],
+  "weight": 1.5
+}

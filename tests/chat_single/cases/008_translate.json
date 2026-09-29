@@ -1,0 +1,14 @@
+{
+  "id": "chat_single_008",
+  "name": "Перевод с сохранением терминов",
+  "prompt": "Переведи на английский: «Модель загружается в память и отвечает на запросы». Используй слова model, memory, requests.",
+  "expected": {
+    "type": "contains_all",
+    "values": ["model", "memory", "request"]
+  },
+  "params": {
+    "max_tokens": 128
+  },
+  "tags": ["translation"],
+  "weight": 1.0
+}

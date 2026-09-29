@@ -1,0 +1,73 @@
+# Непрерывная проверка LLM Test Bench.
+#
+# До этого все проверки жили только локально: pre-commit срабатывал на машине
+# разработчика, а check_*.py запускались руками. Значит на любой другой машине
+# никто не мешал закоммитить код, который их не проходит.
+#
+# Два задания:
+#   * lint   — ruff и импорты, без GUI и без зависимостей проекта;
+#   * checks — весь набор проверок проекта через check_all.py, то есть ровно
+#              тот же гейт, что запускается локально. Один вход вместо списка
+#              шагов: разошедшийся список означал бы, что CI проверяет не то,
+#              что проверяет автор.
+#
+# Живой llama-server на 127.0.0.1:8080 не нужен ни одной проверке — все они
+# самодостаточны. check_ui_server и check_server_manager пропускают блок
+# «живой сервер» и пишут об этом в выводе; check_set_selection и
+# check_speed_metrics поднимают собственный сервер на свободном порту. Раньше
+# в CI попадали только три проверки, и это было недосмотром, а не
+# невозможностью.
+
+name: CI
+
+# Кавычки у `on` не для красоты: YAML 1.1 читает голое `on` как булево True,
+# и часть инструментов (yamllint, локальные парсеры) на этом спотыкается.
+"on":
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  lint:
+    name: Линтер и импорты
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Установить ruff
+        run: python -m pip install ruff==0.16.8
+
+      - name: ruff check (блокирующие E, F, B)
+        run: ruff check .
+
+      - name: ruff format --check
+        run: ruff format --check .
+
+      - name: Неиспользуемые импорты
+        run: python check_imports.py
+
+  checks:
+    name: Проверки проекта (весь набор)
+    runs-on: windows-latest
+    env:
+      # Окна в CI рисовать некуда: GUI-проверки работают в offscreen-режиме.
+      QT_QPA_PLATFORM: offscreen
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Установить зависимости
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Весь набор проверок
+        run: python check_all.py --quiet

@@ -1,0 +1,14 @@
+{
+  "id": "context_2000",
+  "name": "Иголка в стоге, ~2K токенов",
+  "generator": "needle_in_haystack",
+  "target_tokens": 2000,
+  "needle": "КОВАЛЧУК-7742",
+  "question": "Какой код доступа указан в документе? Ответь только кодом.",
+  "expected": {
+    "type": "contains_any",
+    "values": ["КОВАЛЧУК-7742"]
+  },
+  "tags": ["context", "needle"],
+  "weight": 1.0
+}

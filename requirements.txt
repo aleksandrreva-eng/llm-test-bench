@@ -1,0 +1,25 @@
+# LLM Test Bench — зависимости рантайма (раздел 2 ТЗ).
+#
+# Ставится в .venv на Python 3.13:
+#     py -3.13 -m venv .venv
+#     .venv\Scripts\python.exe -m pip install -r requirements.txt
+#
+# Версии зафиксированы точно (==) по рабочей машине: сборка .exe должна быть
+# воспроизводимой, а «поставилось посвежее» — не то, что хочется выяснять из
+# отчёта о прогоне.
+#
+# PySide6-Essentials, а не PySide6: приложению нужны QtCore, QtGui, QtWidgets
+# и QtPrintSupport — они входят в Essentials. Полный PySide6 тянет ещё
+# WebEngine и мультимедиа, то есть лишние сотни мегабайт в сборке.
+# Прямой режим llama-cpp-python отложен: под GPU sm_120 / CUDA 13.x готовых
+# колёс нет.
+
+PySide6-Essentials==6.11.2  # GUI
+gguf==0.19.0                # резервный путь чтения метаданных GGUF
+requests==2.34.2            # HTTP к llama-server
+
+# Jinja2 и pandas здесь нет намеренно: отчёты собираются строками, графики
+# рисуются на QPainter (раздел 2 ТЗ). Раньше они лежали в этом файле, хотя в
+# коде не встречались ни разу, — и ставились на каждой машине впустую.
+#
+# Сборка и проверки — в requirements-dev.txt (pyinstaller, ruff, pre_commit).

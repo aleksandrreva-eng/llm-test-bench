@@ -1,0 +1,20 @@
+{
+  "id": "code_003",
+  "name": "Сложность вложенных циклов",
+  "prompt": "Какова сложность этой функции в худшем случае? Ответь только обозначением в нотации O(...).\n\ndef find_dup(items):\n    for i in range(len(items)):\n        for j in range(i + 1, len(items)):\n            if items[i] == items[j]:\n                return True\n    return False",
+  "expected": {
+    "type": "all_of",
+    "checks": [
+      {
+        "type": "contains_any",
+        "values": ["n^2", "n²", "n**2", "n2"]
+      },
+      {
+        "type": "word_count",
+        "max": 5
+      }
+    ]
+  },
+  "tags": ["code", "complexity"],
+  "weight": 1.5
+}

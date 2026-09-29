@@ -1,0 +1,39 @@
+{
+  "id": "instruction_following_004",
+  "name": "План в строгой схеме",
+  "prompt": "Составь план развёртывания локальной языковой модели на llama.cpp.\nВерни ТОЛЬКО валидный JSON без markdown-обёртки и пояснений: объект с полями task (строка), priority (одно из «low», «medium», «high»), steps (массив ровно из трёх непустых строк), estimate_hours (число от 1 до 8). Лишних полей быть не должно.",
+  "expected": {
+    "type": "json_schema",
+    "schema": {
+      "type": "object",
+      "required": ["task", "priority", "steps", "estimate_hours"],
+      "additionalProperties": false,
+      "properties": {
+        "task": {
+          "type": "string",
+          "minLength": 10
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["low", "medium", "high"]
+        },
+        "steps": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "string",
+            "minLength": 3
+          }
+        },
+        "estimate_hours": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 8
+        }
+      }
+    }
+  },
+  "tags": ["instructions", "json", "schema", "hard"],
+  "weight": 2.0
+}

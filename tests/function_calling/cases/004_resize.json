@@ -1,0 +1,31 @@
+{
+  "id": "function_calling_004",
+  "name": "Изменение размера картинки",
+  "prompt": "Функция resize_image(path: string, width: integer, height: integer, keep_aspect: boolean) меняет размер изображения.\n\nЗадача: уменьши картинку F:\\Pictures\\cover.png до 800 пикселей по ширине и 600 по высоте, сохранив пропорции.\n\nВерни ТОЛЬКО валидный JSON с аргументами функции, без markdown-обёртки и пояснений.",
+  "expected": {
+    "type": "json_schema",
+    "schema": {
+      "type": "object",
+      "required": ["path", "width", "height"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "const": "F:\\Pictures\\cover.png"
+        },
+        "width": {
+          "type": "integer",
+          "const": 800
+        },
+        "height": {
+          "type": "integer",
+          "const": 600
+        },
+        "keep_aspect": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
+  "tags": ["function-calling", "images"],
+  "weight": 1.5
+}

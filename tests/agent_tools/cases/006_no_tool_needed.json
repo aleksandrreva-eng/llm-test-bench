@@ -1,0 +1,23 @@
+{
+  "id": "agent_tools_006",
+  "name": "Инструмент не нужен",
+  "prompt": "Доступны инструменты:\n- get_weather(city: string) — узнать погоду в городе\n- multiply(a: number, b: number) — умножить два числа\n- search_files(path: string, mask: string) — найти файлы по маске\n- send_email(to: string, subject: string) — отправить письмо\n- get_time(city: string) — узнать время в городе\n\nЗадача: сколько дней осталось до конца текущего года?\n\nЕсли ни один инструмент для задачи не подходит, не вызывай его, а ответь обычным текстом и объясни, почему инструмента не хватает.",
+  "expected": {
+    "type": "all_of",
+    "checks": [
+      {
+        "type": "no_tool_call"
+      },
+      {
+        "type": "word_count",
+        "min": 3
+      },
+      {
+        "type": "word_count",
+        "max": 80
+      }
+    ]
+  },
+  "tags": ["tools", "no-tool", "hard"],
+  "weight": 2.0
+}

@@ -1,0 +1,17 @@
+{
+  "id": "agent_tools_004",
+  "name": "Отправка письма",
+  "prompt": "Доступны инструменты:\n- get_weather(city: string) — узнать погоду в городе\n- multiply(a: number, b: number) — умножить два числа\n- search_files(path: string, mask: string) — найти файлы по маске\n- send_email(to: string, subject: string) — отправить письмо\n- get_time(city: string) — узнать время в городе\n\nЗадача: Отправь письмо на адрес ink@example.com с темой «Отчёт по тестам».\n\nОтветь ТОЛЬКО валидным JSON вида {\"name\": \"<инструмент>\", \"arguments\": {...}} без markdown-обёртки.",
+  "expected": {
+    "type": "tool_call",
+    "tool_call": {
+      "name": "send_email",
+      "arguments": {
+        "to": "ink@example.com",
+        "subject": "Отчёт по тестам"
+      }
+    }
+  },
+  "tags": ["tools", "email"],
+  "weight": 1.5
+}

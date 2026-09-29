@@ -1,0 +1,36 @@
+{
+  "id": "context_16000_absent",
+  "name": "Кода в документе нет — не подставлять чужой",
+  "generator": "needle_in_haystack",
+  "target_tokens": 16000,
+  "needles": [
+    {
+      "text": "КОВАЛЧУК-7742",
+      "position": 0.3
+    },
+    {
+      "text": "СКЛАД-3310",
+      "position": 0.7,
+      "template": "Служебный код доступа к складу в этом документе — {needle}."
+    }
+  ],
+  "question": "Какой код доступа к лаборатории указан в документе? Если такого кода в документе нет, ответь словом «нет».",
+  "expected": {
+    "type": "all_of",
+    "checks": [
+      {
+        "type": "contains_any",
+        "values": ["нет", "не указан", "не найден", "отсутству", "не упомина"]
+      },
+      {
+        "type": "not_contains",
+        "values": ["КОВАЛЧУК-7742", "СКЛАД-3310"]
+      }
+    ]
+  },
+  "params": {
+    "max_tokens": 64
+  },
+  "tags": ["context", "needle", "hallucination", "hard"],
+  "weight": 2.0
+}

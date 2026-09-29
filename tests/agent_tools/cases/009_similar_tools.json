@@ -1,0 +1,17 @@
+{
+  "id": "agent_tools_009",
+  "name": "Похожие инструменты: письмо или SMS",
+  "prompt": "Доступны инструменты:\n- send_email(to: string, subject: string) — отправить письмо на адрес\n- send_sms(phone: string, message: string) — отправить SMS на номер телефона\n- get_weather(city: string) — узнать погоду в городе\n- get_time(city: string) — узнать время в городе\n\nЗадача: отправь SMS на номер +79990001122 с текстом: Заказ готов.\n\nОтветь ТОЛЬКО валидным JSON вида {\"name\": \"<инструмент>\", \"arguments\": {...}} без markdown-обёртки.",
+  "expected": {
+    "type": "tool_call",
+    "tool_call": {
+      "name": "send_sms",
+      "arguments": {
+        "phone": "+79990001122",
+        "message": "Заказ готов"
+      }
+    }
+  },
+  "tags": ["tools", "distractor", "hard"],
+  "weight": 2.0
+}

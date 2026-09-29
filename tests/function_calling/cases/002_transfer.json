@@ -1,0 +1,35 @@
+{
+  "id": "function_calling_002",
+  "name": "Перевод денег с валютой из списка",
+  "prompt": "Функция transfer_money(from_account: string, to_account: string, amount: number, currency: string, comment: string) переводит деньги. Поле currency принимает только RUB, USD или EUR.\n\nЗадача: переведи 1500 рублей со счёта main на счёт savings, комментарий «на отпуск».\n\nВерни ТОЛЬКО валидный JSON с аргументами функции, без markdown-обёртки и пояснений.",
+  "expected": {
+    "type": "json_schema",
+    "schema": {
+      "type": "object",
+      "required": ["from_account", "to_account", "amount", "currency"],
+      "properties": {
+        "from_account": {
+          "type": "string",
+          "const": "main"
+        },
+        "to_account": {
+          "type": "string",
+          "const": "savings"
+        },
+        "amount": {
+          "type": "number",
+          "const": 1500
+        },
+        "currency": {
+          "type": "string",
+          "enum": ["RUB", "USD", "EUR"]
+        },
+        "comment": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "tags": ["function-calling", "money"],
+  "weight": 1.5
+}

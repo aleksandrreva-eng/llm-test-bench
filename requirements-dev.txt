@@ -1,0 +1,13 @@
+# LLM Test Bench — инструменты разработки.
+#
+# Нужны тому, кто правит код или собирает .exe. Для запуска приложения
+# достаточно requirements.txt.
+#
+#     .venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+#     .venv\Scripts\python.exe -m pre_commit install
+
+-r requirements.txt
+
+pyinstaller==6.22.3   # сборка one-file LLMTestBench.exe
+ruff==0.16.8          # линтер и форматтер (блокирующие правила E, F, B)
+pre_commit==4.6.2     # hook-и на каждый commit: ruff, импорты, правила ревью

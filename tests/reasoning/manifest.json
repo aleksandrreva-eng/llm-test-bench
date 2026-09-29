@@ -1,0 +1,15 @@
+{
+  "id": "reasoning",
+  "name": "Многошаговые рассуждения",
+  "version": "2.0.0",
+  "description": "Задачи, где одного шага мало: цепочки вычислений, вывод порядка из условий, ловушки с лишними данными и задачи с недостающими данными. Проверяется удержание промежуточного результата, а не знание факта. Кейсы рассчитаны на модели класса 35B-A3B (Ornith 1.5 35B), для которых chat_single слишком прост",
+  "cases_count": 8,
+  "metrics": ["latency_ms", "tokens_per_sec", "tokens_in", "tokens_out"],
+  "scoring": "none",
+  "default_params": {
+    "temperature": 0.0,
+    "seed": 42,
+    "max_tokens": 512
+  },
+  "tags": ["reasoning", "hard"]
+}

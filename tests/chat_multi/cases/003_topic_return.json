@@ -1,0 +1,32 @@
+{
+  "id": "chat_multi_003",
+  "name": "Возврат к теме после отвлечения",
+  "prompt": [
+    {
+      "role": "user",
+      "content": "Мы обсуждали модель Ornith-1.5-35B."
+    },
+    {
+      "role": "assistant",
+      "content": "Да, это модель на 35 миллиардов параметров."
+    },
+    {
+      "role": "user",
+      "content": "Отвлечёмся: какая столица у Японии?"
+    },
+    {
+      "role": "assistant",
+      "content": "Токио."
+    },
+    {
+      "role": "user",
+      "content": "Вернёмся к прежней теме. Как называлась модель, о которой мы говорили в самом начале?"
+    }
+  ],
+  "expected": {
+    "type": "contains_any",
+    "values": ["Ornith"]
+  },
+  "tags": ["context", "attention"],
+  "weight": 1.5
+}

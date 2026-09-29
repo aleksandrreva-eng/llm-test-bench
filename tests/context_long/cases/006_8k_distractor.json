@@ -1,0 +1,36 @@
+{
+  "id": "context_8000_distractor",
+  "name": "Два кода доступа, вопрос про один",
+  "generator": "needle_in_haystack",
+  "target_tokens": 8000,
+  "needles": [
+    {
+      "text": "КОВАЛЧУК-7742",
+      "position": 0.2
+    },
+    {
+      "text": "СКЛАД-3310",
+      "position": 0.75,
+      "template": "Служебный код доступа к складу в этом документе — {needle}."
+    }
+  ],
+  "question": "Какой код доступа к архиву указан в документе? Ответь только кодом.",
+  "expected": {
+    "type": "all_of",
+    "checks": [
+      {
+        "type": "contains_all",
+        "values": ["КОВАЛЧУК-7742"]
+      },
+      {
+        "type": "not_contains",
+        "values": ["СКЛАД-3310"]
+      }
+    ]
+  },
+  "params": {
+    "max_tokens": 64
+  },
+  "tags": ["context", "needle", "distractor", "hard"],
+  "weight": 2.0
+}

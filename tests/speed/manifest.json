@@ -1,0 +1,16 @@
+{
+  "id": "speed",
+  "name": "Скорость (tokens/sec)",
+  "version": "2.0.0",
+  "description": "Промпты фиксированной длины: замер tokens/sec, времени до первого токена и общего времени генерации. Текст промпта генерируется, чтобы длина была ровной. Версия 2.0.0 добавляет 16K и 32K — на таких префиллах видно, где начинают сказываться память и пропускная способность шины, а не только вычислительная мощность",
+  "cases_count": 6,
+  "metrics": ["tokens_per_sec", "ttft_ms", "total_ms", "tokens_in", "tokens_out"],
+  "scoring": "none",
+  "generator": "lorem_by_tokens",
+  "default_params": {
+    "temperature": 0.0,
+    "seed": 42,
+    "max_tokens": 128
+  },
+  "tags": ["speed", "performance", "hard"]
+}

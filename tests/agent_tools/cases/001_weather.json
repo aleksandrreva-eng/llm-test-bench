@@ -1,0 +1,16 @@
+{
+  "id": "agent_tools_001",
+  "name": "Погода в Москве",
+  "prompt": "Доступны инструменты:\n- get_weather(city: string) — узнать погоду в городе\n- multiply(a: number, b: number) — умножить два числа\n- search_files(path: string, mask: string) — найти файлы по маске\n- send_email(to: string, subject: string) — отправить письмо\n- get_time(city: string) — узнать время в городе\n\nЗадача: Какая погода в Москве?\n\nОтветь ТОЛЬКО валидным JSON вида {\"name\": \"<инструмент>\", \"arguments\": {...}} без markdown-обёртки.",
+  "expected": {
+    "type": "tool_call",
+    "tool_call": {
+      "name": "get_weather",
+      "arguments": {
+        "city": "Москва"
+      }
+    }
+  },
+  "tags": ["tools", "basic"],
+  "weight": 1.0
+}

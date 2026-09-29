@@ -1,0 +1,30 @@
+{
+  "id": "agent_tools_007",
+  "name": "Два вызова в одном ответе",
+  "prompt": "Доступны инструменты:\n- get_weather(city: string) — узнать погоду в городе\n- multiply(a: number, b: number) — умножить два числа\n- search_files(path: string, mask: string) — найти файлы по маске\n- send_email(to: string, subject: string) — отправить письмо\n- get_time(city: string) — узнать время в городе\n\nЗадача: узнай текущее время в Москве и погоду в Москве.\n\nВерни ТОЛЬКО валидный JSON-массив из двух вызовов вида [{\"name\": \"<инструмент>\", \"arguments\": {...}}, ...] без markdown-обёртки и пояснений.",
+  "expected": {
+    "type": "all_of",
+    "checks": [
+      {
+        "type": "tool_call",
+        "tool_call": {
+          "name": "get_time",
+          "arguments": {
+            "city": "Москва"
+          }
+        }
+      },
+      {
+        "type": "tool_call",
+        "tool_call": {
+          "name": "get_weather",
+          "arguments": {
+            "city": "Москва"
+          }
+        }
+      }
+    ]
+  },
+  "tags": ["tools", "chain", "hard"],
+  "weight": 2.0
+}

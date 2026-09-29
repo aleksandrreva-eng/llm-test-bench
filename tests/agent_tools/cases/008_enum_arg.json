@@ -1,0 +1,16 @@
+{
+  "id": "agent_tools_008",
+  "name": "Аргумент из закрытого списка значений",
+  "prompt": "Доступны инструменты:\n- get_weather(city: string) — узнать погоду в городе\n- set_volume(level: string) — установить уровень громкости; допустимые значения: low, medium, high\n- search_files(path: string, mask: string) — найти файлы по маске\n- get_time(city: string) — узнать время в городе\n\nЗадача: сделай звук тихим.\n\nОтветь ТОЛЬКО валидным JSON вида {\"name\": \"<инструмент>\", \"arguments\": {...}} без markdown-обёртки.",
+  "expected": {
+    "type": "tool_call",
+    "tool_call": {
+      "name": "set_volume",
+      "arguments": {
+        "level": "low"
+      }
+    }
+  },
+  "tags": ["tools", "enum", "hard"],
+  "weight": 2.0
+}

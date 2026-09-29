@@ -1,0 +1,44 @@
+{
+  "id": "chat_multi_006",
+  "name": "Правило из первой реплики держится до конца",
+  "prompt": [
+    {
+      "role": "user",
+      "content": "На весь наш разговор правило: отвечай ровно одним словом, без пояснений и без знаков препинания."
+    },
+    {
+      "role": "assistant",
+      "content": "Понял"
+    },
+    {
+      "role": "user",
+      "content": "Сколько дней в неделе?"
+    },
+    {
+      "role": "assistant",
+      "content": "Семь"
+    },
+    {
+      "role": "user",
+      "content": "А сколько месяцев в году?"
+    }
+  ],
+  "expected": {
+    "type": "all_of",
+    "checks": [
+      {
+        "type": "word_count",
+        "exact": 1
+      },
+      {
+        "type": "contains_any",
+        "values": ["двенадцать", "12"]
+      }
+    ]
+  },
+  "params": {
+    "max_tokens": 128
+  },
+  "tags": ["instructions", "context", "hard"],
+  "weight": 2.0
+}

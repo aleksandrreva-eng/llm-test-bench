@@ -1,0 +1,41 @@
+{
+  "id": "chat_single_018",
+  "name": "Вложенный JSON с массивом объектов",
+  "prompt": "Верни JSON с описанием трёх моделей: объект с полем models — массив ровно из трёх объектов, у каждого поля name (строка) и size_gb (число больше нуля). Возьми любые три модели из списка: Ornith 1.5 35B, Qwen3 8B, Gemma 4 12B, Llama 4 Scout 17B. Верни ТОЛЬКО валидный JSON без markdown-обёртки и пояснений.",
+  "expected": {
+    "type": "json_schema",
+    "schema": {
+      "type": "object",
+      "required": ["models"],
+      "additionalProperties": false,
+      "properties": {
+        "models": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "object",
+            "required": ["name", "size_gb"],
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 3
+              },
+              "size_gb": {
+                "type": "number",
+                "minimum": 0.1,
+                "maximum": 200
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "params": {
+    "max_tokens": 384
+  },
+  "tags": ["format", "json", "schema", "hard"],
+  "weight": 2.0
+}

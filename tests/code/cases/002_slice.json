@@ -1,0 +1,20 @@
+{
+  "id": "code_002",
+  "name": "Что напечатает срез",
+  "prompt": "Что выведет этот код?\n\nx = [1, 2, 3]\nprint(x[::-1][1])\n\nОтветь только выводом, без пояснений.",
+  "expected": {
+    "type": "all_of",
+    "checks": [
+      {
+        "type": "exact_match",
+        "values": ["2"]
+      },
+      {
+        "type": "word_count",
+        "exact": 1
+      }
+    ]
+  },
+  "tags": ["code", "python", "trap"],
+  "weight": 1.5
+}

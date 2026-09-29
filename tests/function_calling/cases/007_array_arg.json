@@ -1,0 +1,31 @@
+{
+  "id": "function_calling_007",
+  "name": "Массив строк в аргументе",
+  "prompt": "Функция tag_document(doc_id: string, tags: array of string) помечает документ тегами.\n\nЗадача: пометь документ doc-77 ровно тремя тегами: отчёт, квартал, черновик.\n\nВерни ТОЛЬКО валидный JSON с аргументами функции, без markdown-обёртки и пояснений.",
+  "expected": {
+    "type": "json_schema",
+    "schema": {
+      "type": "object",
+      "required": ["doc_id", "tags"],
+      "additionalProperties": false,
+      "properties": {
+        "doc_id": {
+          "type": "string",
+          "const": "doc-77"
+        },
+        "tags": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": ["отчет", "квартал", "черновик"]
+          }
+        }
+      }
+    }
+  },
+  "tags": ["function-calling", "array", "hard"],
+  "weight": 2.0
+}

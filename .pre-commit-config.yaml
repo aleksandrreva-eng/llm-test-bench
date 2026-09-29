@@ -1,0 +1,51 @@
+# pre-commit — локальные проверки перед commit.
+#
+# Установка (один раз на машину):
+#   .venv/Scripts/python.exe -m pip install --quiet pre-commit ruff
+#   .venv/Scripts/python.exe -m pre_commit install
+#
+# Проверить всё, не делая commit:
+#   .venv/Scripts/python.exe -m pre_commit run --all-files
+#
+# Обойти проверку в крайнем случае: git commit --no-verify
+# (и написать в журнале ревью, почему обошли).
+#
+# Четыре hook-а. `language: system` — берут инструменты прямо из .venv,
+# не скачивая свои копии: в проектной среде это единственный надёжный способ.
+#
+#   1. ruff check           — блокирующие правила E/F/B (см. ruff.toml)
+#   2. ruff format --check  — формат. Именно --check, а НЕ `ruff format`:
+#                             авто-правка в hook-е молча переписывает файлы,
+#                             и в diff попадает не то, что человек написал.
+#                             Формат применяем осознанно, отдельным коммитом.
+#   3. check_imports        — мёртвые импорты
+#   4. check_review         — правила O2–O6 и P1 по новым строкам (check_review.py)
+
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check (E/F/B)
+        entry: .venv/Scripts/ruff.exe check
+        language: system
+        types: [python]
+
+      - id: ruff-format
+        name: ruff format --check
+        entry: .venv/Scripts/ruff.exe format --check
+        language: system
+        types: [python]
+
+      - id: check-imports
+        name: check_imports.py (мёртвые импорты)
+        entry: .venv/Scripts/python.exe check_imports.py
+        language: system
+        pass_filenames: false
+        types: [python]
+
+      - id: check-review
+        name: check_review.py (глухие except, магия, отладка)
+        entry: .venv/Scripts/python.exe check_review.py --staged
+        language: system
+        pass_filenames: false
+        types: [python]

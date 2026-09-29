@@ -1,0 +1,21 @@
+{
+  "id": "reasoning_003",
+  "name": "День недели через сто дней",
+  "prompt": "Сегодня пятница, 25 сентября 2026 года. Какой день недели будет ровно через 100 дней? Ответь одним словом — названием дня недели.",
+  "expected": {
+    "type": "all_of",
+    "checks": [
+      {
+        "type": "regex",
+        "pattern": "воскрес",
+        "flags": ["ignorecase"]
+      },
+      {
+        "type": "word_count",
+        "max": 2
+      }
+    ]
+  },
+  "tags": ["reasoning", "dates", "hard"],
+  "weight": 1.5
+}

@@ -1,0 +1,15 @@
+{
+  "id": "function_calling",
+  "name": "Function calling",
+  "version": "2.0.0",
+  "description": "Вызовы функций с параметрами разной сложности: проверяется валидность ответа по JSON Schema, типы полей и отсутствие выдуманных параметров. Описания доступных функций лежат в functions/. Версия 2.0.0 добавляет вложенный объект, массив с ограничением на состав, значение из закрытого списка, необязательный аргумент (его нельзя передавать, если о нём не просили) и отрицание в задаче",
+  "cases_count": 10,
+  "metrics": ["latency_ms", "tokens_per_sec", "schema_valid"],
+  "scoring": "none",
+  "default_params": {
+    "temperature": 0.0,
+    "seed": 42,
+    "max_tokens": 320
+  },
+  "tags": ["function-calling", "format", "hard"]
+}

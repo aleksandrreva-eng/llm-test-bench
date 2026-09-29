@@ -1,0 +1,20 @@
+{
+  "id": "code_001",
+  "name": "Что будет на пустом списке",
+  "prompt": "Что произойдёт, если вызвать эту функцию с пустым списком?\n\ndef average(values):\n    return sum(values) / len(values)\n\nОтветь одним предложением.",
+  "expected": {
+    "type": "all_of",
+    "checks": [
+      {
+        "type": "contains_any",
+        "values": ["ZeroDivisionError", "деление на ноль", "делени на ноль", "division by zero", "нулю"]
+      },
+      {
+        "type": "word_count",
+        "max": 25
+      }
+    ]
+  },
+  "tags": ["code", "python", "debug"],
+  "weight": 1.5
+}

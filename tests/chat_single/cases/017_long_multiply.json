@@ -1,0 +1,23 @@
+{
+  "id": "chat_single_017",
+  "name": "Умножение четырёхзначных чисел",
+  "prompt": "Сколько будет 1237 умножить на 849? Ответь только числом, без пояснений.",
+  "expected": {
+    "type": "all_of",
+    "checks": [
+      {
+        "type": "regex",
+        "pattern": "\\b1050213\\b"
+      },
+      {
+        "type": "word_count",
+        "max": 3
+      }
+    ]
+  },
+  "params": {
+    "max_tokens": 128
+  },
+  "tags": ["math", "number", "hard"],
+  "weight": 2.0
+}

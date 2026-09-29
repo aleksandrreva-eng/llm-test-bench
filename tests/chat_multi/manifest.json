@@ -1,0 +1,15 @@
+{
+  "id": "chat_multi",
+  "name": "Чат (multi-turn)",
+  "version": "2.0.0",
+  "description": "Сценарии из нескольких реплик: модель должна удерживать контекст предыдущих сообщений. Версия 2.0.0 добавляет длинную память через отвлекающие вопросы, давление на неверный ответ и правило, заданное в первой реплике и действующее до конца разговора",
+  "cases_count": 6,
+  "metrics": ["latency_ms", "tokens_per_sec", "tokens_in", "tokens_out"],
+  "scoring": "none",
+  "default_params": {
+    "temperature": 0.0,
+    "seed": 42,
+    "max_tokens": 256
+  },
+  "tags": ["chat", "multi-turn", "hard"]
+}

@@ -1,0 +1,22 @@
+{
+  "id": "quality",
+  "name": "Качество ответов (golden set)",
+  "version": "2.0.0",
+  "description": "Сравнение с эталонными ответами. Основная оценка — LLM-as-judge (этап 8); до тех пор работает проверка по обязательным ключевым фактам, а поле golden хранится для будущего судьи. Набор-образец, его нужно расширять. Кейсы 006–008 добавлены под модели класса 35B-A3B: квантизация, MoE против плотной модели, расход памяти под контекст",
+  "cases_count": 8,
+  "metrics": ["latency_ms", "tokens_per_sec", "judge_score"],
+  "scoring": {
+    "type": "llm_judge",
+    "judge_model": "local",
+    "judge_prompt": "Оцени ответ от 0 до 10 по критериям: точность, полнота, отсутствие галлюцинаций. Верни только число.",
+    "min_score": 7,
+    "aggregate": "mean",
+    "fallback": "contains_all"
+  },
+  "default_params": {
+    "temperature": 0.0,
+    "seed": 42,
+    "max_tokens": 384
+  },
+  "tags": ["quality", "golden", "hard"]
+}

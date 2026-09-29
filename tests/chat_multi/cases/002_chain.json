@@ -1,0 +1,32 @@
+{
+  "id": "chat_multi_002",
+  "name": "Цепочка вычислений через реплики",
+  "prompt": [
+    {
+      "role": "user",
+      "content": "Запомни число 37."
+    },
+    {
+      "role": "assistant",
+      "content": "Запомнил: 37."
+    },
+    {
+      "role": "user",
+      "content": "Умножь его на 2."
+    },
+    {
+      "role": "assistant",
+      "content": "74."
+    },
+    {
+      "role": "user",
+      "content": "А теперь вычти из результата 10. Сколько получилось? Ответь только числом."
+    }
+  ],
+  "expected": {
+    "type": "contains_any",
+    "values": ["64"]
+  },
+  "tags": ["context", "reasoning"],
+  "weight": 1.5
+}

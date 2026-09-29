@@ -1,0 +1,24 @@
+{
+  "id": "chat_multi_001",
+  "name": "Удержание имени из первой реплики",
+  "prompt": [
+    {
+      "role": "user",
+      "content": "Меня зовут Инк."
+    },
+    {
+      "role": "assistant",
+      "content": "Приятно познакомиться, Инк!"
+    },
+    {
+      "role": "user",
+      "content": "Как меня зовут?"
+    }
+  ],
+  "expected": {
+    "type": "contains_any",
+    "values": ["Инк"]
+  },
+  "tags": ["context", "basic"],
+  "weight": 1.0
+}

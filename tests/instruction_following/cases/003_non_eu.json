@@ -1,0 +1,44 @@
+{
+  "id": "instruction_following_003",
+  "name": "Три страны вне Евросоюза, JSON-массив",
+  "prompt": "Перечисли три страны Европы, которые не входят в Европейский союз. Верни ТОЛЬКО валидный JSON-массив из трёх строк с названиями стран, без markdown-обёртки и пояснений.",
+  "expected": {
+    "type": "all_of",
+    "checks": [
+      {
+        "type": "json_schema",
+        "schema": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 3
+          }
+        }
+      },
+      {
+        "type": "not_contains",
+        "values": [
+          "Германи",
+          "Франци",
+          "Итали",
+          "Испани",
+          "Польш",
+          "Нидерланд",
+          "Бельги",
+          "Австри",
+          "Швеци",
+          "Финлянд",
+          "Португал",
+          "Греци",
+          "Хорвати",
+          "Румыни"
+        ]
+      }
+    ]
+  },
+  "tags": ["instructions", "json", "facts"],
+  "weight": 2.0
+}

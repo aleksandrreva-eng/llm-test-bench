@@ -1,0 +1,20 @@
+{
+  "id": "instruction_following_001",
+  "name": "Ровно пять слов на одну букву",
+  "prompt": "Напиши ровно пять слов, каждое из которых начинается с буквы «к». Ответь одной строкой, без нумерации и пояснений.",
+  "expected": {
+    "type": "all_of",
+    "checks": [
+      {
+        "type": "regex",
+        "pattern": "^\\s*(?:[кК][а-яёА-ЯЁ]*[\\s,.;!-]*){5}$"
+      },
+      {
+        "type": "word_count",
+        "exact": 5
+      }
+    ]
+  },
+  "tags": ["instructions", "constraints", "hard"],
+  "weight": 1.5
+}

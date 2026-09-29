@@ -1,0 +1,1488 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LLM Test Bench — прототип интерфейса</title>
+<style>
+/* ============================================================
+   LLM Test Bench — дизайн-токены
+   Тёмная тема. Поверхности разделяются свечением (яркостью),
+   а не рамкой у каждого блока: рамки оставлены только там,
+   где нужно отделить вложенный объект.
+   ============================================================ */
+:root{
+  /* поверхности */
+  --bg:#131519;
+  --surface:#191c22;
+  --surface-2:#1f232b;
+  --surface-3:#262b34;
+  --surface-4:#2d333d;
+  --border:#2b313b;
+  --border-strong:#3a4250;
+
+  /* текст */
+  --text:#e8ecf2;
+  --text-2:#a8b2c1;
+  --text-3:#6f7a8c;
+  --label:#8ab4f8;
+
+  /* акцент и семантика */
+  --accent:#3b82f6;
+  --accent-hi:#5b9bff;
+  --accent-lo:#2f6fd8;
+  --accent-dim:rgba(59,130,246,.14);
+  --pass:#3fb950;  --pass-dim:rgba(63,185,80,.14);
+  --warn:#d29922;  --warn-dim:rgba(210,153,34,.14);
+  --fail:#f85149;  --fail-dim:rgba(248,81,73,.14);
+  --info:#58a6ff;
+
+  /* сетка */
+  --sp1:4px; --sp2:8px; --sp3:12px; --sp4:16px; --sp5:24px; --sp6:32px;
+  --r-xs:4px; --r-sm:6px; --r-md:8px; --r-pill:999px;
+  --row:28px; --ctl:32px;
+
+  --font:"Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,sans-serif;
+  --mono:"Cascadia Mono",Consolas,"SF Mono",ui-monospace,monospace;
+  --shadow:0 12px 32px rgba(0,0,0,.5);
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:#0b0d10;
+  color:var(--text);
+  font-family:var(--font);
+  font-size:13px;
+  line-height:1.45;
+  display:flex; flex-direction:column; align-items:center;
+  gap:10px; padding:20px;
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+.num{font-variant-numeric:tabular-nums}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+button{font-family:inherit;font-size:inherit;cursor:pointer}
+input,select{font-family:inherit;font-size:inherit}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#3a4250;border-radius:5px;border:2px solid var(--surface)}
+::-webkit-scrollbar-thumb:hover{background:#4b5566}
+
+/* ============================ окно ============================ */
+.win{
+  width:min(1460px,100%);
+  height:min(920px,calc(100vh - 90px));
+  min-height:640px;
+  background:var(--bg);
+  border:1px solid var(--border-strong);
+  border-radius:var(--r-md);
+  box-shadow:var(--shadow);
+  display:flex; flex-direction:column; overflow:hidden;
+}
+.titlebar{
+  height:34px; flex:0 0 34px;
+  display:flex; align-items:center; gap:var(--sp2);
+  padding:0 var(--sp3);
+  background:#0f1115;
+  border-bottom:1px solid var(--border);
+}
+.tb-logo{
+  width:18px;height:18px;border-radius:5px;
+  background:linear-gradient(135deg,var(--accent),#7c3aed);
+  display:grid;place-items:center;font-size:10px;font-weight:700;color:#fff;
+}
+.tb-title{font-size:12px;color:var(--text-2)}
+.tb-spacer{flex:1}
+.tb-btns{display:flex;gap:2px}
+.tb-btns i{
+  width:34px;height:24px;display:grid;place-items:center;
+  color:var(--text-3);font-style:normal;font-size:11px;border-radius:3px;
+}
+.tb-btns i:hover{background:var(--surface-3);color:var(--text)}
+.tb-btns i.close:hover{background:var(--fail);color:#fff}
+
+/* ============================ строка меню ============================ */
+.appbar{
+  height:42px; flex:0 0 42px;
+  display:flex; align-items:center; gap:var(--sp2);
+  padding:0 var(--sp3) 0 var(--sp2);
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+}
+.menu{display:flex;gap:2px;margin-left:var(--sp1)}
+.menu button{
+  background:none;border:0;color:var(--text-2);
+  padding:5px 10px;border-radius:var(--r-xs);
+}
+.menu button:hover{background:var(--surface-3);color:var(--text)}
+.env{
+  display:flex;align-items:center;gap:var(--sp2);
+  background:var(--surface-2);border:1px solid var(--border);
+  border-radius:var(--r-pill);padding:4px 12px 4px 10px;
+  font-size:12px;
+}
+.dot{width:8px;height:8px;border-radius:50%;flex:0 0 8px}
+.dot.ok{background:var(--pass);box-shadow:0 0 0 3px var(--pass-dim)}
+.dot.warn{background:var(--warn);box-shadow:0 0 0 3px var(--warn-dim)}
+.dot.fail{background:var(--fail);box-shadow:0 0 0 3px var(--fail-dim)}
+.dot.idle{background:var(--text-3)}
+.env .ep{color:var(--text-3)}
+.env .mdl{color:var(--text);max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kbd{
+  font-family:var(--mono);font-size:11px;
+  background:var(--surface-2);border:1px solid var(--border-strong);
+  border-bottom-width:2px;border-radius:var(--r-xs);
+  padding:1px 6px;color:var(--text-2);
+}
+
+/* ============================ каркас ============================ */
+.body{flex:1;display:flex;min-height:0}
+
+/* ---- рельс навигации ---- */
+.rail{
+  flex:0 0 208px;width:208px;
+  background:var(--surface);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  padding:var(--sp3) var(--sp2);
+  gap:2px;
+  transition:flex-basis .16s ease,width .16s ease;
+}
+.rail.collapsed{flex-basis:60px;width:60px}
+.rail.collapsed .ri-label,.rail.collapsed .rail-foot-label{display:none}
+.rail.collapsed .rail-item{justify-content:center;padding:0}
+.rail-item{
+  display:flex;align-items:center;gap:10px;
+  height:36px;padding:0 10px;
+  border-radius:var(--r-sm);
+  color:var(--text-2);background:none;border:0;
+  text-align:left;position:relative;
+}
+.rail-item:hover{background:var(--surface-3);color:var(--text)}
+.rail-item.on{background:var(--accent-dim);color:var(--text);font-weight:600}
+.rail-item.on::before{
+  content:"";position:absolute;left:-8px;top:8px;bottom:8px;width:3px;
+  background:var(--accent);border-radius:0 3px 3px 0;
+}
+.rail-item.on .ic{color:var(--accent)}
+.ri-label{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ri-count{
+  font-size:11px;color:var(--text-3);background:var(--surface-3);
+  border-radius:var(--r-pill);padding:1px 7px;
+}
+.rail-spacer{flex:1}
+.rail-sep{height:1px;background:var(--border);margin:var(--sp2) 10px}
+.ic{width:16px;height:16px;flex:0 0 16px;color:currentColor;stroke:currentColor;fill:none;
+    stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.ic.fill{fill:currentColor;stroke:none}
+
+/* ---- рабочая область ---- */
+.workspace{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden}
+.view{display:none;flex:1;min-height:0;flex-direction:column;padding:var(--sp4)}
+.view.on{display:flex}
+.page-head{display:flex;align-items:flex-start;gap:var(--sp3);margin-bottom:var(--sp4)}
+.page-head h1{margin:0;font-size:20px;font-weight:600;letter-spacing:-.2px}
+.page-sub{color:var(--text-3);font-size:12px;margin-top:2px}
+.page-head .spacer{flex:1}
+
+/* ============================ элементы ============================ */
+.btn{
+  display:inline-flex;align-items:center;gap:7px;
+  height:var(--ctl);padding:0 14px;
+  background:var(--surface-3);color:var(--text-2);
+  border:1px solid var(--border-strong);border-radius:var(--r-sm);
+  white-space:nowrap;
+}
+.btn:hover{background:var(--surface-4);color:var(--text)}
+.btn:active{transform:translateY(1px)}
+.btn.sm{height:26px;padding:0 10px;font-size:12px}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--text-2)}
+.btn.ghost:hover{background:var(--surface-3);color:var(--text)}
+.btn.primary{
+  background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;
+}
+.btn.primary:hover{background:var(--accent-hi);border-color:var(--accent-hi)}
+.btn.danger{color:var(--fail)}
+.btn.danger:hover{background:var(--fail-dim);color:var(--fail);border-color:var(--fail)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.btn:focus-visible,.rail-item:focus-visible,input:focus-visible,select:focus-visible{
+  outline:2px solid var(--accent-hi);outline-offset:1px;
+}
+
+.field{display:flex;flex-direction:column;gap:5px}
+.lbl{font-size:12px;color:var(--label)}
+.hint{font-size:11px;color:var(--text-3)}
+.input,.select{
+  height:var(--ctl);padding:0 10px;
+  background:var(--bg);color:var(--text);
+  border:1px solid var(--border-strong);border-radius:var(--r-sm);
+  width:100%;
+}
+.input::placeholder{color:var(--text-3)}
+.input:focus,.select:focus{border-color:var(--accent);outline:none;
+  box-shadow:0 0 0 3px var(--accent-dim)}
+.select{appearance:none;background-image:none;padding-right:28px;cursor:pointer}
+
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{
+  height:26px;padding:0 11px;display:inline-flex;align-items:center;gap:6px;
+  background:var(--surface-2);border:1px solid var(--border);
+  border-radius:var(--r-pill);color:var(--text-3);font-size:12px;
+}
+.chip:hover{border-color:var(--border-strong);color:var(--text-2)}
+.chip.on{background:var(--accent-dim);border-color:var(--accent);color:var(--accent-hi);font-weight:600}
+.chip .n{font-variant-numeric:tabular-nums;opacity:.75}
+
+.badge{
+  display:inline-flex;align-items:center;gap:5px;
+  height:20px;padding:0 8px;border-radius:var(--r-xs);
+  font-size:11px;font-weight:600;font-variant-numeric:tabular-nums;
+}
+.badge.pass{background:var(--pass-dim);color:var(--pass)}
+.badge.warn{background:var(--warn-dim);color:var(--warn)}
+.badge.fail{background:var(--fail-dim);color:var(--fail)}
+.badge.mute{background:var(--surface-3);color:var(--text-3)}
+.badge.accent{background:var(--accent-dim);color:var(--accent-hi)}
+
+.card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r-md);display:flex;flex-direction:column;min-height:0;
+}
+.card-head{
+  height:38px;flex:0 0 38px;display:flex;align-items:center;gap:var(--sp2);
+  padding:0 var(--sp3);border-bottom:1px solid var(--border);
+}
+.card-head h2{margin:0;font-size:13px;font-weight:600;color:var(--text)}
+.card-head .spacer{flex:1}
+.card-body{flex:1;min-height:0;overflow:auto;padding:var(--sp2)}
+.card-foot{
+  flex:0 0 auto;display:flex;align-items:center;gap:var(--sp2);
+  padding:var(--sp2) var(--sp3);border-top:1px solid var(--border);
+  font-size:12px;color:var(--text-3);
+}
+.card-foot .spacer{flex:1}
+
+/* ---- список с чекбоксами ---- */
+.opt{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:7px 9px;border-radius:var(--r-sm);cursor:pointer;
+  border:1px solid transparent;
+}
+.opt:hover{background:var(--surface-2)}
+.opt.on{background:var(--accent-dim);border-color:rgba(59,130,246,.35)}
+.box{
+  width:15px;height:15px;flex:0 0 15px;margin-top:2px;
+  border:1.5px solid var(--border-strong);border-radius:var(--r-xs);
+  background:var(--bg);display:grid;place-items:center;color:#fff;
+}
+.box svg{width:10px;height:10px;opacity:0}
+.opt.on .box{background:var(--accent);border-color:var(--accent)}
+.opt.on .box svg{opacity:1}
+.opt-main{flex:1;min-width:0;overflow:hidden}
+.opt-name{
+  display:block;color:var(--text);font-size:12.5px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.opt-meta{
+  display:flex;gap:8px;color:var(--text-3);font-size:11px;margin-top:2px;
+  font-variant-numeric:tabular-nums;overflow:hidden;
+}
+.opt-meta > span{
+  flex:0 1 auto;min-width:0;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;
+}
+.opt-meta > span:first-child{flex:0 0 auto}
+.opt-right{flex:0 0 auto;text-align:right;margin-left:10px}
+
+/* ---- таблица ---- */
+.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12.5px}
+.tbl th{
+  position:sticky;top:0;z-index:1;
+  background:var(--surface-2);color:var(--text-3);
+  font-weight:600;font-size:11px;letter-spacing:.3px;text-transform:uppercase;
+  text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);
+  white-space:nowrap;cursor:pointer;user-select:none;
+}
+.tbl th:hover{color:var(--text-2)}
+.tbl th .srt{opacity:.4;font-size:9px}
+.tbl th.on{color:var(--text-2)}
+.tbl th.on .srt{opacity:1;color:var(--accent)}
+.tbl td{
+  padding:0 10px;height:var(--row);border-bottom:1px solid var(--border);
+  color:var(--text-2);white-space:nowrap;
+}
+.tbl tr:hover td{background:var(--surface-2)}
+.tbl tr.sel td{background:var(--accent-dim)}
+.tbl td.name{color:var(--text);font-family:var(--mono);font-size:11.5px}
+.tbl td.r{text-align:right}
+.tbl .row-act{opacity:0;color:var(--accent-hi);cursor:pointer}
+.tbl tr:hover .row-act{opacity:1}
+
+.score{display:flex;align-items:center;gap:8px}
+.score-bar{
+  width:52px;height:5px;border-radius:3px;background:var(--surface-4);overflow:hidden;
+}
+.score-bar i{display:block;height:100%;border-radius:3px}
+.s-pass{background:var(--pass)} .s-warn{background:var(--warn)} .s-fail{background:var(--fail)}
+
+/* ---- прогресс ---- */
+.bar{height:6px;border-radius:3px;background:var(--surface-4);overflow:hidden;flex:1}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:3px;transition:width .25s ease}
+
+/* ---- консоль ---- */
+.console{
+  font-family:var(--mono);font-size:11.5px;line-height:1.65;
+  background:#0e1013;border:1px solid var(--border);border-radius:var(--r-sm);
+  padding:var(--sp2) var(--sp3);overflow:auto;white-space:pre;
+  color:var(--text-2);
+}
+.console .ok{color:var(--pass)}
+.console .warn{color:var(--warn)}
+.console .fail{color:var(--fail)}
+.console .dim{color:var(--text-3)}
+.console .accent{color:var(--accent-hi)}
+
+/* ---- сетка тестирования ---- */
+.grid3{
+  flex:1;min-height:0;
+  display:grid;grid-template-columns:308px minmax(0,1fr) 300px;gap:var(--sp3);
+}
+.stack{display:flex;flex-direction:column;gap:var(--sp3);min-height:0}
+.rowline{display:flex;align-items:center;gap:var(--sp2)}
+.rowline .spacer{flex:1}
+
+/* ---- полоса прогона ---- */
+.runbar{
+  flex:0 0 auto;margin-top:var(--sp3);
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r-md);padding:var(--sp3);
+  display:flex;flex-direction:column;gap:var(--sp2);
+}
+.runbar-top{display:flex;align-items:center;gap:var(--sp3)}
+.run-stat{font-size:12px;color:var(--text-3);font-variant-numeric:tabular-nums;white-space:nowrap}
+.disclose{
+  background:none;border:0;color:var(--text-3);font-size:12px;
+  display:inline-flex;align-items:center;gap:5px;padding:2px 0;
+}
+.disclose:hover{color:var(--text-2)}
+.disclose .ic{transition:transform .15s ease}
+.disclose.open .ic{transform:rotate(180deg)}
+
+/* ---- метрики ---- */
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--sp3)}
+.metric{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r-md);padding:var(--sp3);
+}
+.metric .k{font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:.4px}
+.metric .v{
+  font-size:24px;font-weight:600;color:var(--text);margin-top:4px;
+  font-variant-numeric:tabular-nums;letter-spacing:-.5px;
+}
+.metric .v small{font-size:13px;color:var(--text-3);font-weight:400}
+.metric .d{font-size:11px;color:var(--text-3);margin-top:2px}
+
+/* ---- график столбиками ---- */
+.chart{
+  display:flex;align-items:flex-end;gap:var(--sp4);
+  height:190px;padding:var(--sp3) var(--sp4) 0;
+}
+.chart .col{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px;height:100%}
+.chart .v{font-size:12px;font-weight:600;color:var(--text);font-variant-numeric:tabular-nums}
+.chart .b{width:100%;max-width:74px;border-radius:var(--r-xs) var(--r-xs) 0 0;background:var(--accent);min-height:3px}
+.chart .b.best{background:var(--pass)}
+.chart .cap{font-size:11px;color:var(--text-3);text-align:center;max-width:96px;line-height:1.3}
+
+/* ---- таблица основ ---- */
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:var(--sp2)}
+.sw{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);overflow:hidden}
+.sw i{display:block;height:44px}
+.sw div{padding:7px 10px}
+.sw b{display:block;font-size:12px;color:var(--text);font-weight:600}
+.sw span{font-family:var(--mono);font-size:11px;color:var(--text-3)}
+.spec{display:flex;align-items:baseline;gap:var(--sp3);padding:7px 0;border-bottom:1px solid var(--border)}
+.spec .tag{width:104px;flex:0 0 104px;font-family:var(--mono);font-size:11px;color:var(--text-3)}
+.spec .demo{flex:1;color:var(--text)}
+
+/* ---- статусная строка ---- */
+.statusbar{
+  flex:0 0 28px;height:28px;
+  display:flex;align-items:center;gap:var(--sp3);
+  padding:0 var(--sp3);
+  background:var(--surface-2);border-top:1px solid var(--border);
+  font-size:11.5px;color:var(--text-3);
+}
+.statusbar .spacer{flex:1}
+.statusbar .grp{display:flex;align-items:center;gap:6px}
+.note{
+  font-size:12px;color:var(--text-3);text-align:center;max-width:1000px;
+}
+.note b{color:var(--text-2);font-weight:600}
+</style>
+</head>
+<body>
+
+<div class="win">
+  <!-- ======================= заголовок окна ======================= -->
+  <div class="titlebar">
+    <div class="tb-logo">L</div>
+    <div class="tb-title">LLM Test Bench — v0.10.0</div>
+    <div class="tb-spacer"></div>
+    <div class="tb-btns"><i>—</i><i>▢</i><i class="close">✕</i></div>
+  </div>
+
+  <!-- ======================= меню и состояние ======================= -->
+  <div class="appbar">
+    <div class="menu">
+      <button>Файл</button><button>Сервис</button><button>Справка</button>
+    </div>
+    <div class="tb-spacer"></div>
+    <div class="env" title="Подключение и загруженная модель">
+      <span class="dot ok"></span>
+      <span class="ep mono">127.0.0.1:8080</span>
+      <span style="color:var(--border-strong)">│</span>
+      <span class="mdl">gemma-4-26B-A4B-it-qat-UD-Q4_K_XL</span>
+    </div>
+    <span class="kbd" title="Палитра команд">Ctrl K</span>
+  </div>
+
+  <div class="body">
+    <!-- ======================= рельс навигации ======================= -->
+    <nav class="rail" id="rail">
+      <button class="rail-item on" data-view="v-test">
+        <svg class="ic" viewBox="0 0 16 16"><path d="M6.4 2v5.1L3.2 12.5A1 1 0 0 0 4.1 14h7.8a1 1 0 0 0 .9-1.5L9.6 7.1V2"/><path d="M5.4 2h5.2"/></svg>
+        <span class="ri-label">Тестирование</span>
+      </button>
+      <button class="rail-item" data-view="v-server">
+        <svg class="ic" viewBox="0 0 16 16"><rect x="2.5" y="3" width="11" height="4.2" rx="1"/><rect x="2.5" y="8.8" width="11" height="4.2" rx="1"/><path d="M4.8 5.1h.01M4.8 10.9h.01"/></svg>
+        <span class="ri-label">Сервер</span>
+        <span class="ri-count">лог</span>
+      </button>
+      <button class="rail-item" data-view="v-history">
+        <svg class="ic" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.1"/><path d="M8 4.6V8l2.5 1.6"/></svg>
+        <span class="ri-label">История</span>
+        <span class="ri-count">9</span>
+      </button>
+      <button class="rail-item" data-view="v-compare">
+        <svg class="ic" viewBox="0 0 16 16"><path d="M3 13.2V8.4M8 13.2V3.4M13 13.2V6.6"/><path d="M2 14.2h12"/></svg>
+        <span class="ri-label">Сравнение</span>
+      </button>
+
+      <div class="rail-spacer"></div>
+      <div class="rail-sep"></div>
+      <button class="rail-item" data-view="v-found">
+        <svg class="ic" viewBox="0 0 16 16"><rect x="2.4" y="2.4" width="4.8" height="4.8" rx="1"/><rect x="8.8" y="2.4" width="4.8" height="4.8" rx="1"/><rect x="2.4" y="8.8" width="4.8" height="4.8" rx="1"/><rect x="8.8" y="8.8" width="4.8" height="4.8" rx="1"/></svg>
+        <span class="ri-label">Основа</span>
+      </button>
+      <button class="rail-item" id="railToggle">
+        <svg class="ic" viewBox="0 0 16 16"><path d="M6 3.5L10.5 8 6 12.5"/></svg>
+        <span class="ri-label">Свернуть панель</span>
+      </button>
+    </nav>
+
+    <main class="workspace">
+
+      <!-- ============================================================
+           ЭКРАН 1 — ТЕСТИРОВАНИЕ
+           ============================================================ -->
+      <section class="view on" id="v-test">
+        <div class="page-head">
+          <div>
+            <h1>Тестирование</h1>
+            <div class="page-sub">Модели слева, наборы в центре, параметры справа. Прогон — кнопкой внизу.</div>
+          </div>
+          <div class="spacer"></div>
+          <button class="btn sm ghost">
+            <svg class="ic" viewBox="0 0 16 16"><path d="M2.5 8a5.5 5.5 0 1 1 1.7 4"/><path d="M2.2 12.4V9.1h3.3"/></svg>
+            Обновить список
+          </button>
+        </div>
+
+        <div class="grid3">
+          <!-- ---- модели ---- -->
+          <div class="card">
+            <div class="card-head">
+              <h2>Модели</h2>
+              <div class="spacer"></div>
+              <span class="badge mute">16</span>
+            </div>
+            <div style="padding:10px 10px 6px;display:flex;flex-direction:column;gap:8px">
+              <div style="position:relative">
+                <input class="input" placeholder="Фильтр по имени…" style="padding-left:30px">
+                <svg class="ic" viewBox="0 0 16 16" style="position:absolute;left:9px;top:8px;color:var(--text-3)"><circle cx="7.2" cy="7.2" r="4.4"/><path d="M10.5 10.5l3 3"/></svg>
+              </div>
+              <div class="chips">
+                <button class="chip on">Модели <span class="n">16</span></button>
+                <button class="chip">Служебные <span class="n">29</span></button>
+              </div>
+              <div class="rowline" style="font-size:11.5px;color:var(--text-3)">
+                <svg class="ic" viewBox="0 0 16 16" style="width:13px;height:13px;flex:0 0 13px"><path d="M1.8 4.6A1.6 1.6 0 0 1 3.4 3h2.4l1.3 1.6h5.5a1.6 1.6 0 0 1 1.6 1.6v5.2a1.6 1.6 0 0 1-1.6 1.6H3.4a1.6 1.6 0 0 1-1.6-1.6z"/></svg>
+                <span class="mono">F:\Models</span>
+                <div class="spacer"></div>
+                <button class="btn ghost sm" style="height:22px;padding:0 6px">Сменить</button>
+              </div>
+            </div>
+            <div class="card-body" id="modelList"></div>
+            <div class="card-foot">
+              <span id="modelCount">16 из 16 · выбрано 0</span>
+              <div class="spacer"></div>
+              <button class="btn ghost sm" id="modelsAll">Все</button>
+              <button class="btn ghost sm" id="modelsNone">Снять</button>
+            </div>
+          </div>
+
+          <!-- ---- наборы ---- -->
+          <div class="card">
+            <div class="card-head">
+              <h2>Наборы тестов</h2>
+              <span class="badge mute">v2.0.0 · 97 кейсов</span>
+              <div class="spacer"></div>
+              <button class="btn ghost sm">Только упавшие</button>
+            </div>
+            <div style="padding:10px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text-3)">
+              <span>Отмечено</span>
+              <b class="num" id="setSummary" style="color:var(--text)">0 наборов · 0 кейсов</b>
+              <div class="spacer" style="flex:1"></div>
+              <span class="mono" id="setEta">—</span>
+            </div>
+            <div class="card-body" id="setList"></div>
+            <div class="card-foot">
+              <span>Оценка справа — последний прогон этой модели</span>
+              <div class="spacer"></div>
+              <button class="btn ghost sm" id="setsAll">Все</button>
+              <button class="btn ghost sm" id="setsNone">Снять</button>
+            </div>
+          </div>
+
+          <!-- ---- параметры ---- -->
+          <div class="stack">
+            <div class="card" style="flex:1">
+              <div class="card-head"><h2>Параметры прогона</h2></div>
+              <div class="card-body" style="padding:12px;display:flex;flex-direction:column;gap:14px">
+                <div class="field">
+                  <label class="lbl">Прогонов на кейс</label>
+                  <div class="rowline">
+                    <button class="btn sm" style="width:32px;justify-content:center">−</button>
+                    <input class="input num" value="1" style="width:60px;text-align:center">
+                    <button class="btn sm" style="width:32px;justify-content:center">+</button>
+                    <div class="spacer"></div>
+                    <span class="hint">усреднение по повторам</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="lbl">Лимит кейсов на набор</label>
+                  <select class="select"><option>все кейсы</option><option>10</option><option>5</option><option>1 (дым)</option></select>
+                  <span class="hint">применяется к каждому набору отдельно</span>
+                </div>
+                <div class="field">
+                  <label class="lbl">Фильтр по тегам</label>
+                  <div class="chips">
+                    <button class="chip">basic</button>
+                    <button class="chip on">format</button>
+                    <button class="chip">json</button>
+                    <button class="chip">hard</button>
+                    <button class="chip">no-tool</button>
+                    <button class="chip">reasoning</button>
+                  </div>
+                  <span class="hint">пусто — берутся все кейсы</span>
+                </div>
+                <div class="rail-sep" style="margin:2px 0"></div>
+                <div class="field">
+                  <label class="lbl">Запас токенов на рассуждение</label>
+                  <input class="input num" value="2048">
+                  <span class="hint">у думающих моделей рассуждение идёт в тот же счётчик. Тесный запас даёт пустой ответ.</span>
+                </div>
+                <div class="field">
+                  <label class="lbl">Таймаут запроса, с</label>
+                  <input class="input num" value="900">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ---- полоса прогона ---- -->
+        <div class="runbar">
+          <div class="runbar-top">
+            <button class="btn primary" id="runBtn" style="height:36px;padding:0 18px">
+              <svg class="ic fill" viewBox="0 0 16 16"><path d="M4.8 3.1l7.8 4.9-7.8 4.9z"/></svg>
+              Запустить прогон
+            </button>
+            <button class="btn danger" id="stopBtn" disabled style="height:36px">
+              <svg class="ic fill" viewBox="0 0 16 16"><rect x="4" y="4" width="8" height="8" rx="1"/></svg>
+              Стоп
+            </button>
+            <div class="bar"><i id="runBarFill" style="width:0%"></i></div>
+            <div class="run-stat" id="runStat">готов к запуску</div>
+            <button class="disclose open" id="logToggle">
+              <svg class="ic" viewBox="0 0 16 16"><path d="M4 6.2l4 4 4-4"/></svg>
+              Журнал
+            </button>
+          </div>
+          <div class="console" id="runLog" style="max-height:112px">Сервер отвечает, модель загружена. Выберите наборы и нажмите «Запустить прогон».
+Совет: Ctrl+K — палитра команд, Ctrl+S — сохранить настройки.</div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           ЭКРАН 2 — СЕРВЕР
+           ============================================================ -->
+      <section class="view" id="v-server">
+        <div class="page-head">
+          <div>
+            <h1>Сервер</h1>
+            <div class="page-sub">Состояние подключения, команда запуска и полный лог llama.cpp.</div>
+          </div>
+          <div class="spacer"></div>
+          <button class="btn sm">
+            <svg class="ic" viewBox="0 0 16 16"><path d="M2.5 8a5.5 5.5 0 1 1 1.7 4"/><path d="M2.2 12.4V9.1h3.3"/></svg>
+            Проверить подключение
+          </button>
+        </div>
+
+        <!-- статус -->
+        <div class="card" style="margin-bottom:var(--sp3)">
+          <div style="display:flex;align-items:center;gap:var(--sp4);padding:var(--sp4)">
+            <div style="display:flex;align-items:center;gap:14px">
+              <span class="dot ok" style="width:12px;height:12px;flex:0 0 12px"></span>
+              <div>
+                <div style="font-size:19px;font-weight:600">Готов</div>
+                <div class="hint">сервер отвечает, модель загружена</div>
+              </div>
+            </div>
+            <div style="width:1px;height:44px;background:var(--border)"></div>
+            <div>
+              <div class="hint">Модель</div>
+              <div class="mono" style="color:var(--text)">gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf</div>
+            </div>
+            <div class="spacer" style="flex:1"></div>
+            <div style="display:flex;gap:var(--sp5);text-align:right">
+              <div><div class="hint">Адрес</div><div class="mono num" style="color:var(--text)">127.0.0.1:8080</div></div>
+              <div><div class="hint">PID</div><div class="mono num" style="color:var(--text)">18744</div></div>
+              <div><div class="hint">Поднят</div><div class="mono num" style="color:var(--text)">12 мин</div></div>
+              <div><div class="hint">Старт</div><div class="mono num" style="color:var(--text)">3.4 с</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:var(--sp3);flex:1;min-height:0;align-items:start">
+          <!-- подключение -->
+          <div class="card">
+            <div class="card-head"><h2>Подключение</h2></div>
+            <div class="card-body" style="padding:var(--sp3);display:flex;flex-direction:column;gap:var(--sp4);overflow:auto">
+              <div class="opt on" style="border-color:var(--border);background:var(--surface-2);align-items:flex-start">
+                <span class="box" style="margin-top:1px">
+                  <svg viewBox="0 0 16 16"><path d="M3.4 8.4l3 3 6.2-6.8" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <div class="opt-main">
+                  <div class="opt-name">Использовать существующий сервер</div>
+                  <div class="opt-sub hint" style="margin-top:3px">
+                    Приложение тестирует то, что уже поднято (например, лаунчером), и не запускает свой процесс.
+                    Остановить чужой сервер отсюда нельзя.
+                  </div>
+                </div>
+              </div>
+              <div class="field">
+                <label class="lbl">Путь к llama-server.exe</label>
+                <div class="rowline">
+                  <input class="input mono" style="font-size:11.5px" value="C:\Users\user\AppData\Roaming\LlamaServerLauncherAvalonia\llama.cpp\llama-server.EXE">
+                  <button class="btn sm">Обзор…</button>
+                  <button class="btn sm">Найти</button>
+                </div>
+              </div>
+              <div style="display:grid;grid-template-columns:2fr 1fr;gap:var(--sp3)">
+                <div class="field"><label class="lbl">Host</label><input class="input mono num" value="127.0.0.1"></div>
+                <div class="field"><label class="lbl">Порт</label><input class="input mono num" value="8080"></div>
+              </div>
+              <div class="field">
+                <label class="lbl">Команда запуска</label>
+                <div class="console" style="white-space:pre-wrap;line-height:1.6">llama-server.exe
+  --model "F:\Models\gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf"
+  --host 127.0.0.1 --port 8080
+  --n-gpu-layers 99 --ctx-size 262144
+  --flash-attn on --jinja</div>
+                <div class="rowline">
+                  <button class="btn sm">Копировать</button>
+                  <button class="btn sm">Сбросить к рекомендациям</button>
+                  <div class="spacer"></div>
+                  <span class="hint">собирается из выбранной модели</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- лог -->
+          <div class="card">
+            <div class="card-head">
+              <h2>Журнал сервера</h2>
+              <div class="spacer"></div>
+              <button class="btn ghost sm">Открыть папку</button>
+            </div>
+            <div style="padding:10px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <div class="chips" id="logChips">
+                <button class="chip on" data-lvl="all">Все <span class="n">1284</span></button>
+                <button class="chip" data-lvl="fail">Ошибки <span class="n">0</span></button>
+                <button class="chip" data-lvl="warn">Предупреждения <span class="n">3</span></button>
+                <button class="chip" data-lvl="ok">События <span class="n">7</span></button>
+              </div>
+              <div class="spacer" style="flex:1"></div>
+              <input class="input" placeholder="Поиск по логу…" style="width:180px;height:26px">
+              <button class="chip on" id="autoScroll">Автопрокрутка</button>
+            </div>
+            <div class="console" id="srvLog" style="flex:1;border:0;border-radius:0;max-height:none">
+<span class="dim">[2026-09-24 03:31:02]</span> <span class="accent">I</span> build: b10929 (cuda 13.3)
+<span class="dim">[2026-09-24 03:31:02]</span> <span class="accent">I</span> system_info: n_gpu_layers = 99, CUDA0: NVIDIA GeForce RTX 5060 Ti
+<span class="dim">[2026-09-24 03:31:04]</span> <span class="accent">I</span> load_tensors: model size = 13.31 GiB
+<span class="dim">[2026-09-24 03:31:05]</span> <span class="ok">I</span> model loaded, 262144 tokens context
+<span class="dim">[2026-09-24 03:31:05]</span> <span class="ok">I</span> server is listening on 127.0.0.1:8080
+<span class="dim">[2026-09-24 03:33:35]</span> <span class="accent">I</span> slot release: id 0 | task 12 | stop processing
+<span class="dim">[2026-09-24 03:33:36]</span> <span class="warn">W</span> prompt truncated to fit context window
+<span class="dim">[2026-09-24 03:34:10]</span> <span class="accent">I</span> all slots are idle</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           ЭКРАН 3 — ИСТОРИЯ
+           ============================================================ -->
+      <section class="view" id="v-history">
+        <style>
+          .bulkbar{
+            display:none;align-items:center;gap:var(--sp2);
+            background:var(--accent-dim);border:1px solid var(--accent);
+            border-radius:var(--r-sm);padding:8px 12px;margin-bottom:var(--sp3);
+          }
+          .bulkbar.on{display:flex}
+          .filters{
+            display:flex;align-items:flex-end;gap:var(--sp3);
+            padding:var(--sp3);border-bottom:1px solid var(--border);flex-wrap:wrap;
+          }
+          .filters .field{min-width:150px}
+          .empty{
+            display:flex;flex-direction:column;align-items:center;justify-content:center;
+            gap:var(--sp2);padding:var(--sp6);text-align:center;color:var(--text-3);
+          }
+          .empty .ic{width:34px;height:34px;flex:0 0 34px;color:var(--border-strong)}
+          .empty b{color:var(--text-2);font-size:14px;font-weight:600}
+        </style>
+
+        <div class="page-head">
+          <div>
+            <h1>История</h1>
+            <div class="page-sub">Каждый прогон лежит в JSON и в SQLite. Фильтры применяются сразу.</div>
+          </div>
+          <div class="spacer"></div>
+          <button class="btn sm ghost">
+            <svg class="ic" viewBox="0 0 16 16"><path d="M2.5 4.6h4l1.3 1.6h5.7v6.2a1 1 0 0 1-1 1H3.5a1 1 0 0 1-1-1z"/></svg>
+            Открыть папку результатов
+          </button>
+        </div>
+
+        <div class="bulkbar" id="bulkBar">
+          <b id="bulkCount">Выбрано 0</b>
+          <div style="flex:1"></div>
+          <button class="btn sm">
+            <svg class="ic" viewBox="0 0 16 16"><path d="M3 13.2V8.4M8 13.2V3.4M13 13.2V6.6"/><path d="M2 14.2h12"/></svg>
+            Сравнить выбранные
+          </button>
+          <button class="btn sm danger">
+            <svg class="ic" viewBox="0 0 16 16"><path d="M3 5h10M6.4 5V3.6h3.2V5M4.2 5l.6 8.4h6.4L11.8 5"/></svg>
+            В корзину
+          </button>
+          <button class="btn sm ghost" id="bulkClear">Снять выделение</button>
+        </div>
+
+        <div class="card" style="flex:1;min-height:0">
+          <div class="filters">
+            <div class="field">
+              <label class="lbl">Модель</label>
+              <select class="select"><option>Все модели</option><option>gemma-4-26B-A4B-it-qat-UD-Q4_K_XL</option><option>Ornith-1.5-35B-A3B-Q4_K_M</option></select>
+            </div>
+            <div class="field">
+              <label class="lbl">Набор</label>
+              <select class="select"><option>Все наборы</option><option>chat_single</option><option>chat_multi</option><option>quality</option><option>speed</option></select>
+            </div>
+            <div class="field">
+              <label class="lbl">Период</label>
+              <div class="rowline">
+                <input class="input mono num" value="24.08.2026" style="width:118px">
+                <span class="hint">—</span>
+                <input class="input mono num" value="25.09.2026" style="width:118px">
+              </div>
+            </div>
+            <div class="field">
+              <label class="lbl">Статус</label>
+              <select class="select"><option>Все</option><option>Готово</option><option>Остановлен</option><option>Без проверок</option></select>
+            </div>
+            <div class="field" style="flex:1;min-width:180px">
+              <label class="lbl">Поиск по идентификатору</label>
+              <input class="input mono" placeholder="chat_single_20260924…">
+            </div>
+            <button class="btn sm ghost">Сбросить</button>
+          </div>
+
+          <div class="card-body" style="padding:0">
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th style="width:36px"></th>
+                  <th class="on" data-sort="f" style="width:30%">Прогон <span class="srt">▼</span></th>
+                  <th>Модель</th>
+                  <th>Набор</th>
+                  <th>Счёт</th>
+                  <th class="r">Время</th>
+                  <th>Дата</th>
+                  <th>Статус</th>
+                  <th style="width:96px"></th>
+                </tr>
+              </thead>
+              <tbody id="histBody"></tbody>
+            </table>
+          </div>
+
+          <div class="card-foot">
+            <span>Показано 1–9 из 9 · место на диске 291 КБ</span>
+            <div class="spacer"></div>
+            <button class="btn sm ghost" disabled>‹ Назад</button>
+            <button class="btn sm" style="background:var(--accent);border-color:var(--accent);color:#fff">1</button>
+            <button class="btn sm ghost" disabled>Вперёд ›</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           ЭКРАН 4 — СРАВНЕНИЕ
+           ============================================================ -->
+      <section class="view" id="v-compare">
+        <div class="page-head">
+          <div>
+            <h1>Сравнение</h1>
+            <div class="page-sub">Прогоны одной модели или разных — рядом, по общим метрикам.</div>
+          </div>
+          <div class="spacer"></div>
+          <button class="btn sm">Добавить прогон</button>
+          <button class="btn sm">
+            <svg class="ic" viewBox="0 0 16 16"><path d="M8 2.5v8M4.6 7.4L8 10.8l3.4-3.4M3 13.4h10"/></svg>
+            Экспорт HTML
+          </button>
+          <button class="btn sm">CSV</button>
+        </div>
+
+        <div class="chips" style="margin-bottom:var(--sp3)">
+          <span class="chip on">chat_single · 24.09 03:33 <span class="n">13/15</span>
+            <svg class="ic" viewBox="0 0 16 16" style="width:11px;height:11px"><path d="M4.5 4.5l7 7M11.5 4.5l-7 7"/></svg>
+          </span>
+          <span class="chip on">chat_single · 24.09 03:36 <span class="n">13/15</span>
+            <svg class="ic" viewBox="0 0 16 16" style="width:11px;height:11px"><path d="M4.5 4.5l7 7M11.5 4.5l-7 7"/></svg>
+          </span>
+          <span class="chip on">chat_multi · 24.09 03:39 <span class="n">3/3</span>
+            <svg class="ic" viewBox="0 0 16 16" style="width:11px;height:11px"><path d="M4.5 4.5l7 7M11.5 4.5l-7 7"/></svg>
+          </span>
+          <button class="chip">+ ещё</button>
+        </div>
+
+        <div class="metrics" style="margin-bottom:var(--sp3)">
+          <div class="metric">
+            <div class="k">Лучший счёт</div>
+            <div class="v">100 <small>%</small></div>
+            <div class="d">chat_multi · 3 из 3</div>
+          </div>
+          <div class="metric">
+            <div class="k">Средний счёт</div>
+            <div class="v">91.1 <small>%</small></div>
+            <div class="d">по 3 прогонам с проверками</div>
+          </div>
+          <div class="metric">
+            <div class="k">Быстрейший TTFT</div>
+            <div class="v">230 <small>мс</small></div>
+            <div class="d">префилл 116 токенов</div>
+          </div>
+          <div class="metric">
+            <div class="k">Генерация</div>
+            <div class="v">100.9 <small>t/s</small></div>
+            <div class="d">94.3…100.9 по префиллу</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:var(--sp3);margin-bottom:var(--sp3)">
+          <div class="card">
+            <div class="card-head">
+              <h2>Счёт по прогонам</h2>
+              <div class="spacer"></div>
+              <span class="hint">зелёный — лучший результат</span>
+            </div>
+            <div class="chart" id="scoreChart"></div>
+            <div style="padding:var(--sp3) var(--sp4) var(--sp3);display:flex;gap:var(--sp4);font-size:11px;color:var(--text-3);border-top:1px solid var(--border);margin-top:var(--sp2)">
+              <span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--pass)"></i> ≥ 90 %</span>
+              <span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--warn)"></i> 70–90 %</span>
+              <span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--fail)"></i> &lt; 70 %</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <h2>Префилл: объём → задержка</h2>
+              <div class="spacer"></div>
+              <span class="hint">speed · 24.09 03:38</span>
+            </div>
+            <div class="chart" id="speedChart"></div>
+            <div style="padding:0 var(--sp4) var(--sp3)" class="hint">
+              TTFT растёт линейно: 230 мс на 116 токенах → 1 613 мс на 4 016.
+              Генерация держится 94–101 t/s.
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="flex:1;min-height:0">
+          <div class="card-head">
+            <h2>Метрики по прогонам</h2>
+            <div class="spacer"></div>
+            <span class="hint">лучшее значение в столбце подсвечено</span>
+          </div>
+          <div class="card-body" style="padding:0">
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th>Прогон</th><th>Набор</th>
+                  <th class="r">Счёт</th><th class="r">Кейсов</th>
+                  <th class="r">Префилл, t/s</th><th class="r">TTFT, мс</th>
+                  <th class="r">Генерация, t/s</th><th class="r">Общее время, с</th>
+                </tr>
+              </thead>
+              <tbody id="cmpBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           ЭКРАН 5 — ОСНОВА
+           ============================================================ -->
+      <section class="view" id="v-found">
+        <div class="page-head">
+          <div>
+            <h1>Основа</h1>
+            <div class="page-sub">Токены, правила и горячие клавиши, из которых собран макет.</div>
+          </div>
+        </div>
+
+        <div class="card" style="flex:1;min-height:0">
+          <div class="card-body" style="padding:var(--sp4);display:flex;flex-direction:column;gap:var(--sp5)">
+
+            <div>
+              <h2 style="margin:0 0 var(--sp3);font-size:14px">Цвет</h2>
+              <div class="swatches">
+                <div class="sw"><i style="background:#131519"></i><div><b>Фон окна</b><span>#131519</span></div></div>
+                <div class="sw"><i style="background:#191c22"></i><div><b>Панель</b><span>#191C22</span></div></div>
+                <div class="sw"><i style="background:#1f232b"></i><div><b>Приподнято</b><span>#1F232B</span></div></div>
+                <div class="sw"><i style="background:#262b34"></i><div><b>Наведение</b><span>#262B34</span></div></div>
+                <div class="sw"><i style="background:#2b313b"></i><div><b>Граница</b><span>#2B313B</span></div></div>
+                <div class="sw"><i style="background:#e8ecf2"></i><div><b>Текст</b><span>#E8ECF2</span></div></div>
+                <div class="sw"><i style="background:#a8b2c1"></i><div><b>Второстепенный</b><span>#A8B2C1</span></div></div>
+                <div class="sw"><i style="background:#6f7a8c"></i><div><b>Приглушённый</b><span>#6F7A8C</span></div></div>
+                <div class="sw"><i style="background:#8ab4f8"></i><div><b>Подпись параметра</b><span>#8AB4F8</span></div></div>
+                <div class="sw"><i style="background:#3b82f6"></i><div><b>Акцент</b><span>#3B82F6</span></div></div>
+                <div class="sw"><i style="background:#3fb950"></i><div><b>Успех</b><span>#3FB950</span></div></div>
+                <div class="sw"><i style="background:#d29922"></i><div><b>Внимание</b><span>#D29922</span></div></div>
+                <div class="sw"><i style="background:#f85149"></i><div><b>Ошибка</b><span>#F85149</span></div></div>
+              </div>
+              <p class="hint" style="margin:var(--sp3) 0 0">
+                Смысл: фон окна → панель → приподнято → наведение. Четыре ступени яркости вместо
+                рамки у каждого блока — глазу есть за что зацепиться, а интерфейс не превращается в сетку.
+              </p>
+            </div>
+
+            <div>
+              <h2 style="margin:0 0 var(--sp2);font-size:14px">Шрифт и размеры</h2>
+              <div class="spec"><span class="tag">20 / 600</span><span class="demo" style="font-size:20px;font-weight:600">Заголовок экрана</span></div>
+              <div class="spec"><span class="tag">13 / 600</span><span class="demo" style="font-size:13px;font-weight:600">Заголовок блока</span></div>
+              <div class="spec"><span class="tag">12.5 / 400</span><span class="demo" style="font-size:12.5px">Основной текст и строки таблиц</span></div>
+              <div class="spec"><span class="tag">12 / 400</span><span class="demo" style="font-size:12px;color:var(--text-2)">Подписи полей, второстепенное</span></div>
+              <div class="spec"><span class="tag">11 / 600</span><span class="demo" style="font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--text-3)">Шапка таблицы</span></div>
+              <div class="spec"><span class="tag">11.5 mono</span><span class="demo mono" style="font-size:11.5px">chat_single_005 · F:\Models · 2 670 t/s</span></div>
+              <p class="hint" style="margin:var(--sp3) 0 0">
+                Базовый размер — 13 px вместо 12: на 1280×800 текст перестаёт быть мелким.
+                Числа, идентификаторы и пути — только моноширинным и с табличными цифрами,
+                чтобы колонки не «плясали» при обновлении.
+              </p>
+            </div>
+
+            <div>
+              <h2 style="margin:0 0 var(--sp2);font-size:14px">Сетка и компоненты</h2>
+              <div class="spec"><span class="tag">шаг 4·8·12</span>
+                <span class="demo rowline" style="gap:8px">
+                  <i style="width:4px;height:14px;background:var(--accent)"></i>
+                  <i style="width:8px;height:14px;background:var(--accent)"></i>
+                  <i style="width:12px;height:14px;background:var(--accent)"></i>
+                  <i style="width:16px;height:14px;background:var(--accent)"></i>
+                  <i style="width:24px;height:14px;background:var(--accent)"></i>
+                  <i style="width:32px;height:14px;background:var(--accent)"></i>
+                </span>
+              </div>
+              <div class="spec"><span class="tag">высоты</span>
+                <span class="demo">строка таблицы 28 · поле и кнопка 32 · главная кнопка 36</span></div>
+              <div class="spec"><span class="tag">кнопки</span>
+                <span class="demo rowline" style="flex-wrap:wrap;gap:8px">
+                  <button class="btn primary sm">Главная</button>
+                  <button class="btn sm">Обычная</button>
+                  <button class="btn ghost sm">Тихая</button>
+                  <button class="btn danger sm">Опасная</button>
+                  <button class="btn sm" disabled>Выключена</button>
+                </span>
+              </div>
+              <div class="spec"><span class="tag">метки</span>
+                <span class="demo rowline" style="flex-wrap:wrap;gap:8px">
+                  <span class="badge pass">13/15</span>
+                  <span class="badge warn">4/5</span>
+                  <span class="badge fail">ПЛОХ</span>
+                  <span class="badge accent">метрики</span>
+                  <span class="badge mute">не гонялся</span>
+                  <span class="chip on">format</span>
+                  <span class="chip">json</span>
+                </span>
+              </div>
+              <div class="spec"><span class="tag">поля</span>
+                <span class="demo rowline" style="gap:10px;max-width:520px">
+                  <input class="input" value="127.0.0.1">
+                  <select class="select" style="width:150px"><option>все кейсы</option></select>
+                </span>
+              </div>
+              <div class="spec"><span class="tag">пусто</span>
+                <span class="demo">
+                  <div class="empty" style="padding:var(--sp4);border:1px dashed var(--border);border-radius:var(--r-sm)">
+                    <svg class="ic" viewBox="0 0 16 16"><circle cx="7.2" cy="7.2" r="4.4"/><path d="M10.5 10.5l3 3"/></svg>
+                    <b>Ничего не найдено</b>
+                    <span>Под текущие фильтры не попал ни один прогон.</span>
+                    <button class="btn sm" style="margin-top:6px">Сбросить фильтры</button>
+                  </div>
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <h2 style="margin:0 0 var(--sp2);font-size:14px">Правила, из которых собран макет</h2>
+              <ol style="margin:0;padding-left:20px;color:var(--text-2);line-height:1.85">
+                <li>Одна главная кнопка на экран. Всё остальное — второй план.</li>
+                <li>Рамка только у вложенного объекта; панели разделяются фоном.</li>
+                <li>Числа — моноширинным и табличными цифрами: колонки не «пляшут».</li>
+                <li>Строка 28 px, поле 32 px: попадать мышью легко, плотность сохраняется.</li>
+                <li>Фокус виден всегда — акцентное кольцо 2 px. Приложение ведётся с клавиатуры.</li>
+                <li>Фильтры применяются сразу. Кнопки «Применить» нет — это лишний шаг.</li>
+                <li>Массовые действия появляются при выделении, а не висят всегда.</li>
+                <li>Опасное — красное и стоит отдельно от остальных кнопок.</li>
+                <li>Пустое состояние объясняет, что делать, и даёт выход.</li>
+                <li>Для рутины нет модальных окон: статус идёт в строку состояния и в журнал.</li>
+              </ol>
+            </div>
+
+            <div>
+              <h2 style="margin:0 0 var(--sp2);font-size:14px">Клавиатура</h2>
+              <div class="spec"><span class="tag">Ctrl K</span><span class="demo">Палитра команд — перейти к разделу или действию <span class="badge accent">новое</span></span></div>
+              <div class="spec"><span class="tag">Ctrl S</span><span class="demo">Сохранить настройки <span class="hint">(уже есть)</span></span></div>
+              <div class="spec"><span class="tag">Ctrl Q</span><span class="demo">Выход <span class="hint">(уже есть)</span></span></div>
+              <div class="spec"><span class="tag">F5</span><span class="demo">Пересканировать модели · обновить историю <span class="badge accent">новое</span></span></div>
+              <div class="spec"><span class="tag">Ctrl Enter</span><span class="demo">Запустить прогон <span class="badge accent">новое</span></span></div>
+              <div class="spec"><span class="tag">Esc</span><span class="demo">Остановить прогон <span class="badge accent">новое</span></span></div>
+              <div class="spec"><span class="tag">Пробел</span><span class="demo">Отметить модель или набор в списке <span class="badge accent">новое</span></span></div>
+              <div class="spec"><span class="tag">Enter</span><span class="demo">Открыть выбранное: отчёт или прогон <span class="badge accent">новое</span></span></div>
+              <div class="spec"><span class="tag">↑ ↓</span><span class="demo">Движение по списку и таблице</span></div>
+              <div class="spec"><span class="tag">Ctrl A</span><span class="demo">Отметить всё в активном списке</span></div>
+              <div class="spec"><span class="tag">Del</span><span class="demo">В корзину, с подтверждением</span></div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <script>
+      /* Экран 3 и 4 рисуются после того, как объявлены данные. */
+      window.addEventListener('DOMContentLoaded', function () {
+        var pass = 's-pass', warn = 's-warn', fail = 's-fail';
+
+        function scoreCell(r) {
+          if (r.p === null) { return '<span class="badge accent">без проверок</span>'; }
+          var pct = r.p / r.t * 100;
+          var cls = pct >= 90 ? pass : (pct >= 70 ? warn : fail);
+          return '<span class="score"><span class="score-bar"><i class="' + cls + '" style="width:' +
+                 pct.toFixed(0) + '%"></i></span><span class="num">' + r.p + '/' + r.t + '</span></span>';
+        }
+
+        var body = document.getElementById('histBody');
+        body.innerHTML = RUNS.map(function (r, i) {
+          var st = r.st === 'finished'
+            ? '<span class="badge pass">готово</span>'
+            : '<span class="badge accent">без проверок</span>';
+          return '<tr data-row="' + i + '">' +
+            '<td><span class="box"><svg viewBox="0 0 16 16"><path d="M3.4 8.4l3 3 6.2-6.8" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td>' +
+            '<td class="name" title="' + r.m + '_' + r.f + '">' + r.f + '</td>' +
+            '<td>' + r.m + '</td>' +
+            '<td><span class="badge mute">' + r.s + '</span></td>' +
+            '<td>' + scoreCell(r) + '</td>' +
+            '<td class="r num">' + r.sec.toFixed(1) + ' с</td>' +
+            '<td class="num" style="color:var(--text-3)">' + r.dt + '</td>' +
+            '<td>' + st + '</td>' +
+            '<td><span class="row-act">Открыть отчёт ↗</span></td>' +
+          '</tr>';
+        }).join('');
+
+        var sel = new Set();
+        function syncBulk() {
+          var bar = document.getElementById('bulkBar');
+          bar.classList.toggle('on', sel.size > 0);
+          document.getElementById('bulkCount').textContent = 'Выбрано ' + sel.size;
+          body.querySelectorAll('tr').forEach(function (tr) {
+            tr.classList.toggle('sel', sel.has(+tr.dataset.row));
+          });
+        }
+        body.addEventListener('click', function (e) {
+          var tr = e.target.closest('tr');
+          if (!tr) { return; }
+          var i = +tr.dataset.row;
+          if (sel.has(i)) { sel.delete(i); } else { sel.add(i); }
+          syncBulk();
+        });
+        document.getElementById('bulkClear').addEventListener('click', function () {
+          sel.clear(); syncBulk();
+        });
+
+        /* сортировка по клику на шапку */
+        document.querySelectorAll('#v-history th[data-sort]').forEach(function (th) {
+          th.addEventListener('click', function () {
+            var asc = !th.classList.contains('on');
+            document.querySelectorAll('#v-history th').forEach(function (x) { x.classList.remove('on'); });
+            th.classList.add('on');
+            th.querySelector('.srt').textContent = asc ? '▼' : '▲';
+            var rows = [].slice.call(body.querySelectorAll('tr'));
+            rows.sort(function (a, b) {
+              var A = RUNS[+a.dataset.row], B = RUNS[+b.dataset.row];
+              return asc ? A.f.localeCompare(B.f) : B.f.localeCompare(A.f);
+            });
+            rows.forEach(function (tr) { body.appendChild(tr); });
+            syncBulk();
+          });
+        });
+
+        /* столбики: счёт по прогонам */
+        var scored = RUNS.filter(function (r) { return r.p !== null; });
+        var best = Math.max.apply(null, scored.map(function (r) { return r.p / r.t; }));
+        document.getElementById('scoreChart').innerHTML = scored.map(function (r) {
+          var pct = r.p / r.t * 100;
+          var cls = pct >= 90 ? pass : (pct >= 70 ? warn : fail);
+          var isBest = (r.p / r.t) === best;
+          return '<div class="col">' +
+            '<span class="v">' + pct.toFixed(0) + '%</span>' +
+            '<span class="b' + (isBest ? ' best' : '') + '" style="height:' + pct.toFixed(0) + '%;background:var(--' +
+              (cls === pass ? 'pass' : (cls === warn ? 'warn' : 'fail')) + ')"></span>' +
+            '<span class="cap">' + r.s + '<br>' + r.dt + '</span>' +
+          '</div>';
+        }).join('');
+
+        /* столбики: TTFT по объёму префилла */
+        var maxT = Math.max.apply(null, SPEED.map(function (s) { return s.ttft; }));
+        document.getElementById('speedChart').innerHTML = SPEED.map(function (s) {
+          var h = s.ttft / maxT * 100;
+          return '<div class="col">' +
+            '<span class="v">' + s.ttft + ' мс</span>' +
+            '<span class="b" style="height:' + h.toFixed(0) + '%"></span>' +
+            '<span class="cap">' + s.pt + ' ток.<br>' + s.ps.toFixed(0) + ' t/s префилл</span>' +
+          '</div>';
+        }).join('');
+
+        /* таблица метрик */
+        var maxGen = Math.max.apply(null, SPEED.map(function (s) { return s.g; }));
+        document.getElementById('cmpBody').innerHTML = SPEED.map(function (s) {
+          return '<tr>' +
+            '<td class="name">' + s.k + '</td>' +
+            '<td><span class="badge mute">speed</span></td>' +
+            '<td class="r"><span class="badge accent">без проверок</span></td>' +
+            '<td class="r num">' + s.pt + '</td>' +
+            '<td class="r num" style="color:var(--text)">' + s.ps.toFixed(1) + '</td>' +
+            '<td class="r num">' + s.ttft + '</td>' +
+            '<td class="r num"' + (s.g === maxGen ? ' style="color:var(--pass);font-weight:600"' : '') + '>' + s.g.toFixed(1) + '</td>' +
+            '<td class="r num">' + (s.tot / 1000).toFixed(1) + '</td>' +
+          '</tr>';
+        }).join('') +
+        RUNS.filter(function (r) { return r.p !== null; }).map(function (r) {
+          var pct = r.p / r.t * 100;
+          return '<tr>' +
+            '<td class="name">' + r.s + ' · ' + r.dt + '</td>' +
+            '<td><span class="badge mute">' + r.s + '</span></td>' +
+            '<td class="r"><span class="num" style="color:' +
+              (pct >= 90 ? 'var(--pass)' : (pct >= 70 ? 'var(--warn)' : 'var(--fail)')) + ';font-weight:600">' +
+              r.p + '/' + r.t + '</span></td>' +
+            '<td class="r num">' + r.t + '</td>' +
+            '<td class="r num">—</td>' +
+            '<td class="r num">—</td>' +
+            '<td class="r num">—</td>' +
+            '<td class="r num">' + r.sec.toFixed(1) + '</td>' +
+          '</tr>';
+        }).join('');
+      });
+      </script>
+    </main>
+  </div>
+
+  <!-- ======================= статусная строка ======================= -->
+  <div class="statusbar">
+    <div class="grp"><span class="dot ok"></span> сервер: готов</div>
+    <span style="color:var(--border-strong)">│</span>
+    <div class="grp">модель: <span class="mono">gemma-4-26B-A4B-it-qat-UD-Q4_K_XL</span></div>
+    <span style="color:var(--border-strong)">│</span>
+    <div class="grp">наборов 11 · кейсов 97</div>
+    <div class="spacer"></div>
+    <div class="grp" id="sbRight">готов</div>
+    <span style="color:var(--border-strong)">│</span>
+    <div class="grp mono">v0.10.0</div>
+  </div>
+</div>
+
+<div class="note">
+  <b>Прототип.</b> Кликайте разделы слева, отмечайте модели и наборы, нажмите «Запустить прогон».
+  Данные — из реальных прогонов от 24.09.2026: gemma-4-26B-A4B-it-qat-UD-Q4_K_XL, 11 наборов, 97 кейсов.
+</div>
+
+<script>
+/* ============================================================
+   Данные — реальные, из results/ и tests/
+   ============================================================ */
+const MODELS = [
+  {n:"gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf", p:"25.2B", c:"262 144", q:"Q4_K_XL", s:"13.3 ГБ"},
+  {n:"gemma-4-26B-A4B-it-qat-Q4_0.gguf",        p:"25.2B", c:"262 144", q:"Q4_0",    s:"14.8 ГБ"},
+  {n:"gemma-4-12B-it-QAT-Q4_0.gguf",            p:"11.9B", c:"262 144", q:"Q4_0",    s:"6.5 ГБ"},
+  {n:"Ornith-1.5-35B-A3B-Q4_K_M.gguf",          p:"35.5B", c:"262 144", q:"Q4_K_M",  s:"20.4 ГБ"},
+  {n:"Ornith-1.5-35B-A3B-Q4_K_M-v2.gguf",       p:"35.5B", c:"262 144", q:"Q4_K_M",  s:"19.6 ГБ"},
+  {n:"Ornith-1.5-35B-Q4_K_M.gguf",              p:"35.5B", c:"262 144", q:"Q4_K_M",  s:"20.2 ГБ"},
+  {n:"Ornith-1.5-9B-Q8_0.gguf",                 p:"9.0B",  c:"262 144", q:"Q8_0",    s:"8.9 ГБ"},
+  {n:"Qwen3.6-27B-Q3_K_S.gguf",                 p:"27.3B", c:"262 144", q:"Q3_K_S",  s:"11.7 ГБ"},
+  {n:"Qwen3.6-27B-UD-IQ3_XXS.gguf",             p:"27.3B", c:"262 144", q:"IQ3_XXS", s:"11.4 ГБ"},
+  {n:"Qwen3-0.6B-Q8_0.gguf",                    p:"752M",  c:"262 144", q:"Q8_0",    s:"774 МБ"}
+];
+
+/* кейсы, счёт последнего прогона этой модели, секунды на кейс */
+const SETS = [
+  {id:"chat_single",          d:"Одиночные вопросы: факты, формат, JSON, точное умножение", c:20, s:"13/15", sc:"warn", t:6.0},
+  {id:"chat_multi",           d:"Удержание контекста, давление на неверный ответ",          c:6,  s:"3/3",   sc:"pass", t:2.7},
+  {id:"reasoning",            d:"Многошаговые цепочки, вывод порядка, задача без ответа",   c:8,  s:"—",     sc:"mute", t:5.0},
+  {id:"instruction_following",d:"Несколько ограничений сразу: длина, формат, порядок",       c:8,  s:"—",     sc:"mute", t:4.0},
+  {id:"robustness",           d:"Инструкция внутри данных, сикофантство, отказ",            c:6,  s:"—",     sc:"mute", t:4.0},
+  {id:"code",                 d:"Разбор чужого кода: причина падения, срез, регекс",        c:5,  s:"—",     sc:"mute", t:6.0},
+  {id:"agent_tools",          d:"Выбор инструмента и аргументов, когда вызывать не надо",   c:10, s:"—",     sc:"mute", t:4.0},
+  {id:"function_calling",     d:"Валидность вызова по JSON Schema",                         c:10, s:"—",     sc:"mute", t:3.5},
+  {id:"quality",              d:"Эталонные ответы по ключевым фактам",                      c:8,  s:"5/5",   sc:"pass", t:21.0},
+  {id:"context_long",         d:"Иголка в стоге 2K…128K, два похожих кода",                 c:10, s:"—",     sc:"mute", t:12.0},
+  {id:"speed",                d:"Префилл 100…32000 токенов: t/s, TTFT",                     c:6,  s:"метрики", sc:"accent", t:9.0}
+];
+
+const RUNS = [
+  {f:"chat_single_20260924_033335.json", m:"gemma-4-26B-A4B-it-qat-UD-Q4_K_XL", s:"chat_single", r:1, p:13, t:15, sec:90.1, dt:"24.09 03:33", st:"finished"},
+  {f:"chat_single_20260924_033641.json", m:"gemma-4-26B-A4B-it-qat-UD-Q4_K_XL", s:"chat_single", r:1, p:13, t:15, sec:90.2, dt:"24.09 03:36", st:"finished"},
+  {f:"chat_multi_20260924_033908.json",  m:"gemma-4-26B-A4B-it-qat-UD-Q4_K_XL", s:"chat_multi",  r:1, p:3,  t:3,  sec:8.0,  dt:"24.09 03:39", st:"finished"},
+  {f:"speed_20260924_033830.json",       m:"gemma-4-26B-A4B-it-qat-UD-Q4_K_XL", s:"speed",       r:1, p:null,t:0, sec:37.5, dt:"24.09 03:38", st:"no_checks"},
+  {f:"speed_20260924_033927.json",       m:"gemma-4-26B-A4B-it-qat-UD-Q4_K_XL", s:"speed",       r:1, p:null,t:0, sec:12.0, dt:"24.09 03:39", st:"no_checks"},
+  {f:"quality_20260924_053348.json",     m:"gemma-4-26B-A4B-it-qat-UD-Q4_K_XL", s:"quality",     r:1, p:4,  t:5,  sec:40.1, dt:"24.09 05:33", st:"finished"},
+  {f:"quality_20260924_053735.json",     m:"gemma-4-26B-A4B-it-qat-UD-Q4_K_XL", s:"quality",     r:1, p:5,  t:5,  sec:58.7, dt:"24.09 05:37", st:"finished"},
+  {f:"quality_20260924_062223.json",     m:"gemma-4-26B-A4B-it-qat-UD-Q4_K_XL", s:"quality",     r:1, p:5,  t:5,  sec:107.9,dt:"24.09 06:22", st:"finished"},
+  {f:"quality_20260924_062605.json",     m:"gemma-4-26B-A4B-it-qat-UD-Q4_K_XL", s:"quality",     r:1, p:5,  t:5,  sec:106.8,dt:"24.09 06:26", st:"finished"}
+];
+
+const SPEED = [
+  {k:"speed_100",  pt:116,  ps:622.2,  ttft:230, g:100.9, cm:361,  tot:3759.7},
+  {k:"speed_500",  pt:518,  ps:1958.7, ttft:350, g:99.3,  cm:772,  tot:8067.8},
+  {k:"speed_1000", pt:1018, ps:2330.4, ttft:509, g:97.4,  cm:1380, tot:14628.0},
+  {k:"speed_4000", pt:4016, ps:2670.0, ttft:1613,g:94.3,  cm:848,  tot:10560.1}
+];
+
+/* ============================================================
+   Навигация. Адрес раздела пишется в hash — ссылку можно
+   сохранить и открыть сразу на нужном экране.
+   ============================================================ */
+function activate(id) {
+  if (!document.getElementById(id)) { return; }
+  document.querySelectorAll('.rail-item[data-view]').forEach(function (x) {
+    x.classList.toggle('on', x.dataset.view === id);
+  });
+  document.querySelectorAll('.view').forEach(function (v) {
+    v.classList.toggle('on', v.id === id);
+  });
+  if (location.hash.slice(1) !== id) { history.replaceState(null, '', '#' + id); }
+}
+document.querySelectorAll('.rail-item[data-view]').forEach(function (b) {
+  b.addEventListener('click', function () { activate(b.dataset.view); });
+});
+document.getElementById('railToggle').addEventListener('click', function () {
+  document.getElementById('rail').classList.toggle('collapsed');
+});
+window.addEventListener('hashchange', function () { activate(location.hash.slice(1)); });
+if (location.hash.slice(1)) { activate(location.hash.slice(1)); }
+
+/* ============================================================
+   Тестирование: модели и наборы
+   ============================================================ */
+/* русские формы множественного числа: 1 набор / 2 набора / 5 наборов */
+function plural(n, one, few, many) {
+  var a = n % 10, b = n % 100;
+  if (a === 1 && b !== 11) { return one; }
+  if (a >= 2 && a <= 4 && (b < 10 || b >= 20)) { return few; }
+  return many;
+}
+
+var chosen = new Set([0]);
+function renderModels() {
+  var host = document.getElementById('modelList');
+  host.innerHTML = MODELS.map(function (m, i) {
+    return '<div class="opt' + (chosen.has(i) ? ' on' : '') + '" data-model="' + i + '">' +
+      '<span class="box"><svg viewBox="0 0 16 16"><path d="M3.4 8.4l3 3 6.2-6.8" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>' +
+      '<span class="opt-main">' +
+        '<span class="opt-name" title="' + m.n + '">' + m.n + '</span>' +
+        '<span class="opt-meta"><span>' + m.p + '</span><span>ctx ' + m.c + '</span><span>' + m.q + '</span></span>' +
+      '</span>' +
+      '<span class="opt-right mono" style="font-size:11.5px;color:var(--text-3)">' + m.s + '</span>' +
+    '</div>';
+  }).join('');
+  host.querySelectorAll('[data-model]').forEach(function (el) {
+    el.addEventListener('click', function () {
+      var i = +el.dataset.model;
+      if (chosen.has(i)) { chosen.delete(i); } else { chosen.add(i); }
+      renderModels(); syncRun();
+    });
+  });
+  var first = chosen.size ? MODELS[[...chosen][0]].n : '—';
+  document.getElementById('modelCount').textContent = '16 из 16 · выбрано ' + chosen.size;
+  document.getElementById('sbRight').textContent = chosen.size
+    ? 'выбрано моделей: ' + chosen.size + ' · первая: ' + first : 'модель не выбрана';
+}
+
+var picked = new Set(['chat_single']);
+function renderSets() {
+  var host = document.getElementById('setList');
+  host.innerHTML = SETS.map(function (s) {
+    var badge = s.sc === 'mute'
+      ? '<span class="badge mute">не гонялся</span>'
+      : '<span class="badge ' + s.sc + '">' + s.s + '</span>';
+    return '<div class="opt' + (picked.has(s.id) ? ' on' : '') + '" data-set="' + s.id + '">' +
+      '<span class="box"><svg viewBox="0 0 16 16"><path d="M3.4 8.4l3 3 6.2-6.8" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>' +
+      '<span class="opt-main">' +
+        '<span class="opt-name mono" style="font-size:12px">' + s.id + '</span>' +
+        '<span class="opt-meta"><span>' + s.c + ' кейсов</span><span>' + s.d + '</span></span>' +
+      '</span>' +
+      '<span class="opt-right">' + badge + '</span>' +
+    '</div>';
+  }).join('');
+  host.querySelectorAll('[data-set]').forEach(function (el) {
+    el.addEventListener('click', function () {
+      var id = el.dataset.set;
+      if (picked.has(id)) { picked.delete(id); } else { picked.add(id); }
+      renderSets(); syncRun();
+    });
+  });
+}
+
+function syncRun() {
+  var cases = 0, secs = 0;
+  SETS.forEach(function (s) { if (picked.has(s.id)) { cases += s.c; secs += s.c * s.t; } });
+  document.getElementById('setSummary').textContent =
+    picked.size + ' ' + plural(picked.size, 'набор', 'набора', 'наборов') + ' · ' +
+    cases + ' ' + plural(cases, 'кейс', 'кейса', 'кейсов');
+  document.getElementById('setEta').textContent = cases
+    ? '≈ ' + Math.max(1, Math.round(secs / 60)) + ' мин на gemma-4-26B' : '—';
+  var ok = chosen.size > 0 && picked.size > 0;
+  document.getElementById('runBtn').disabled = !ok;
+  if (!ok && !running) {
+    document.getElementById('runStat').textContent = chosen.size
+      ? 'отметьте хотя бы один набор' : 'выберите модель';
+  }
+}
+
+document.getElementById('modelsAll').addEventListener('click', function () {
+  MODELS.forEach(function (_, i) { chosen.add(i); }); renderModels(); syncRun();
+});
+document.getElementById('modelsNone').addEventListener('click', function () {
+  chosen.clear(); renderModels(); syncRun();
+});
+document.getElementById('setsAll').addEventListener('click', function () {
+  SETS.forEach(function (s) { picked.add(s.id); }); renderSets(); syncRun();
+});
+document.getElementById('setsNone').addEventListener('click', function () {
+  picked.clear(); renderSets(); syncRun();
+});
+
+/* ============================================================
+   Имитация прогона
+   ============================================================ */
+var running = false;
+function log(html) {
+  var el = document.getElementById('runLog');
+  el.innerHTML += (el.innerHTML ? '\n' : '') + html;
+  el.scrollTop = el.scrollHeight;
+}
+document.getElementById('logToggle').addEventListener('click', function () {
+  var el = document.getElementById('runLog');
+  var open = el.style.display !== 'none';
+  el.style.display = open ? 'none' : 'block';
+  this.classList.toggle('open', !open);
+});
+document.getElementById('runBtn').addEventListener('click', function () {
+  if (running) { return; }
+  running = true;
+  this.disabled = true;
+  document.getElementById('stopBtn').disabled = false;
+  document.getElementById('runLog').innerHTML = '';
+  var list = SETS.filter(function (s) { return picked.has(s.id); });
+  var total = 0;
+  list.forEach(function (s) { total += s.c; });
+  log('<span class="ok">Сервер:</span> http://127.0.0.1:8080');
+  log('<span class="ok">Модель:</span> gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf');
+  log('<span class="dim">Прогон: ' + list.length + ' наборов, кейсов ' + total + ' · прогонов 1</span>');
+  list.forEach(function (s) { log('  <span class="dim">•</span> ' + s.id + ' — ' + s.c + ' кейсов'); });
+  var done = 0;
+  var timer = setInterval(function () {
+    done++;
+    var cid = 'case_' + String(done).padStart(3, '0');
+    var bad = (done === 5 || done === 10);
+    var mark = bad ? '<span class="fail">[ПЛОХ]</span>' : '<span class="ok">[ ок ]</span>';
+    var tail = bad ? ' <span class="dim">(ответ пуст) ответ пуст: рассуждение зациклилось и съело весь бюджет</span>' : '';
+    log(mark + ' ' + cid.padEnd(20, ' ') + ' ' + (2 + Math.random() * 6).toFixed(2) +
+        ' с, TTFT ' + String(Math.round(200 + Math.random() * 400)).padStart(4, ' ') +
+        ' мс, ' + (90 + Math.random() * 12).toFixed(1).padStart(5, ' ') + ' t/s' + tail);
+    var pct = Math.round(done / total * 100);
+    document.getElementById('runBarFill').style.width = pct + '%';
+    document.getElementById('runStat').textContent = 'кейс ' + done + ' из ' + total +
+      ' · осталось ≈ ' + Math.max(0, Math.round((total - done) * 4 / 60)) + ' мин';
+    document.getElementById('sbRight').textContent = 'прогон: ' + pct + '%';
+    if (done >= total) {
+      clearInterval(timer);
+      running = false;
+      document.getElementById('stopBtn').disabled = true;
+      document.getElementById('runBtn').disabled = false;
+      document.getElementById('runStat').textContent = 'готово · ' + (total - 2) + ' из ' + total;
+      log('<span class="ok">Итог: ' + (total - 2) + ' из ' + total + ' (' +
+          Math.round((total - 2) / total * 100) + '%)</span>');
+      log('<span class="warn">Провалено кейсов: 2</span>');
+      log('<span class="dim">Время: ' + (total * 4.1).toFixed(1) + ' с</span>');
+      log('<span class="ok">Отчёт: reports\\' + Date.now() + '.html</span>');
+      document.getElementById('sbRight').textContent = 'прогон завершён';
+    }
+  }, 260);
+});
+document.getElementById('stopBtn').addEventListener('click', function () {
+  this.disabled = true;
+  log('<span class="warn">Остановка: дождёмся конца текущего кейса.</span>');
+  document.getElementById('runStat').textContent = 'останавливаюсь…';
+});
+
+/* фильтр лога */
+document.querySelectorAll('#logChips .chip').forEach(function (c) {
+  c.addEventListener('click', function () {
+    document.querySelectorAll('#logChips .chip').forEach(function (x) { x.classList.remove('on'); });
+    c.classList.add('on');
+  });
+});
+document.getElementById('autoScroll').addEventListener('click', function () {
+  this.classList.toggle('on');
+});
+
+renderModels(); renderSets(); syncRun();
+</script>
+</body>
+</html>

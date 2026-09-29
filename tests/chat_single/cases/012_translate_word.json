@@ -1,0 +1,14 @@
+{
+  "id": "chat_single_012",
+  "name": "Перевод одного слова",
+  "prompt": "Переведи слово «book» на русский язык. Верни только одно слово, без кавычек, точки и пояснений.",
+  "expected": {
+    "type": "exact_match",
+    "value": "книга"
+  },
+  "params": {
+    "max_tokens": 64
+  },
+  "tags": ["translation", "format"],
+  "weight": 1.0
+}

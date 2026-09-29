@@ -1,0 +1,10 @@
+# Нормализовать окончания строк для текстовых файлов.
+* text=auto eol=lf
+
+# Бинарные файлы — не трогать.
+*.ico binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.db binary

@@ -1,0 +1,28 @@
+{
+  "id": "function_calling_005",
+  "name": "Создание пользователя с проверкой e-mail",
+  "prompt": "Функция create_user(login: string, email: string, role: string) создаёт учётную запись. Логин не короче трёх символов, роль — одна из admin, editor, viewer.\n\nЗадача: создай пользователя с логином ink_dev, почтой ink@example.com и ролью editor.\n\nВерни ТОЛЬКО валидный JSON с аргументами функции, без markdown-обёртки и пояснений.",
+  "expected": {
+    "type": "json_schema",
+    "schema": {
+      "type": "object",
+      "required": ["login", "email", "role"],
+      "properties": {
+        "login": {
+          "type": "string",
+          "minLength": 3
+        },
+        "email": {
+          "type": "string",
+          "pattern": "^[^@]+@[^@]+\\.[^@]+$"
+        },
+        "role": {
+          "type": "string",
+          "enum": ["admin", "editor", "viewer"]
+        }
+      }
+    }
+  },
+  "tags": ["function-calling", "users"],
+  "weight": 1.5
+}

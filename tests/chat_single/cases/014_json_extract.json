@@ -1,0 +1,32 @@
+{
+  "id": "chat_single_014",
+  "name": "Извлечение данных в JSON",
+  "prompt": "Преобразуй данные «Иван, 30 лет, Москва» в JSON с полями name (строка), age (целое число), city (строка). Верни ТОЛЬКО валидный JSON без markdown-обёртки и пояснений.",
+  "expected": {
+    "type": "json_schema",
+    "schema": {
+      "type": "object",
+      "required": ["name", "age", "city"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 3
+        },
+        "age": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 120
+        },
+        "city": {
+          "type": "string",
+          "minLength": 3
+        }
+      }
+    }
+  },
+  "params": {
+    "max_tokens": 256
+  },
+  "tags": ["format", "json"],
+  "weight": 1.5
+}

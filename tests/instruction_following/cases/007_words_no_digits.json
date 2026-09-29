@@ -1,0 +1,20 @@
+{
+  "id": "instruction_following_007",
+  "name": "Ответ словом, без единой цифры",
+  "prompt": "Сколько будет семь умножить на восемь? Ответь словом, без цифр.",
+  "expected": {
+    "type": "all_of",
+    "checks": [
+      {
+        "type": "not_contains",
+        "values": ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+      },
+      {
+        "type": "contains_any",
+        "values": ["пятьдесят шесть"]
+      }
+    ]
+  },
+  "tags": ["instructions", "format", "numbers"],
+  "weight": 1.5
+}

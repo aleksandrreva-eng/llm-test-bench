@@ -1,0 +1,14 @@
+{
+  "id": "context_8000",
+  "name": "Иголка в стоге, ~8K токенов",
+  "generator": "needle_in_haystack",
+  "target_tokens": 8000,
+  "needle": "СТАРИЦКИЙ-9084",
+  "question": "Какой код доступа указан в документе? Ответь только кодом.",
+  "expected": {
+    "type": "contains_any",
+    "values": ["СТАРИЦКИЙ-9084"]
+  },
+  "tags": ["context", "needle"],
+  "weight": 1.0
+}

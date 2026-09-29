@@ -1,0 +1,17 @@
+{
+  "id": "agent_tools_003",
+  "name": "Поиск файлов по маске",
+  "prompt": "Доступны инструменты:\n- get_weather(city: string) — узнать погоду в городе\n- multiply(a: number, b: number) — умножить два числа\n- search_files(path: string, mask: string) — найти файлы по маске\n- send_email(to: string, subject: string) — отправить письмо\n- get_time(city: string) — узнать время в городе\n\nЗадача: Найди все файлы с расширением .gguf в папке F:\\Models.\n\nОтветь ТОЛЬКО валидным JSON вида {\"name\": \"<инструмент>\", \"arguments\": {...}} без markdown-обёртки.",
+  "expected": {
+    "type": "tool_call",
+    "tool_call": {
+      "name": "search_files",
+      "arguments": {
+        "path": "F:\\Models",
+        "mask": "*.gguf"
+      }
+    }
+  },
+  "tags": ["tools", "files"],
+  "weight": 1.5
+}

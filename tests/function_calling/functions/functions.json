@@ -1,0 +1,124 @@
+{
+  "functions": [
+    {
+      "name": "book_room",
+      "description": "Забронировать переговорную комнату",
+      "parameters": {
+        "type": "object",
+        "required": ["room", "date", "time", "duration_min"],
+        "properties": {
+          "room": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string",
+            "description": "Дата в формате ГГГГ-ММ-ДД"
+          },
+          "time": {
+            "type": "string",
+            "description": "Время начала в формате ЧЧ:ММ"
+          },
+          "duration_min": {
+            "type": "integer",
+            "minimum": 15,
+            "maximum": 480
+          }
+        }
+      }
+    },
+    {
+      "name": "transfer_money",
+      "description": "Перевести деньги между счетами",
+      "parameters": {
+        "type": "object",
+        "required": ["from_account", "to_account", "amount", "currency"],
+        "properties": {
+          "from_account": {
+            "type": "string"
+          },
+          "to_account": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number",
+            "minimum": 0.01
+          },
+          "currency": {
+            "type": "string",
+            "enum": ["RUB", "USD", "EUR"]
+          },
+          "comment": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "name": "set_reminder",
+      "description": "Поставить напоминание",
+      "parameters": {
+        "type": "object",
+        "required": ["text", "datetime"],
+        "properties": {
+          "text": {
+            "type": "string"
+          },
+          "datetime": {
+            "type": "string",
+            "description": "Момент напоминания в формате ГГГГ-ММ-ДД ЧЧ:ММ"
+          },
+          "repeat": {
+            "type": "string",
+            "enum": ["none", "daily", "weekly", "monthly"]
+          }
+        }
+      }
+    },
+    {
+      "name": "resize_image",
+      "description": "Изменить размер изображения",
+      "parameters": {
+        "type": "object",
+        "required": ["path", "width", "height"],
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "width": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "height": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "keep_aspect": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    {
+      "name": "create_user",
+      "description": "Создать учётную запись пользователя",
+      "parameters": {
+        "type": "object",
+        "required": ["login", "email", "role"],
+        "properties": {
+          "login": {
+            "type": "string",
+            "minLength": 3
+          },
+          "email": {
+            "type": "string",
+            "pattern": "^[^@]+@[^@]+\\.[^@]+$"
+          },
+          "role": {
+            "type": "string",
+            "enum": ["admin", "editor", "viewer"]
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "id": "function_calling_001",
+  "name": "Бронирование переговорной",
+  "prompt": "Функция book_room(room: string, date: string, time: string, duration_min: integer) бронирует переговорную комнату.\n\nЗадача: забронируй комнату «Нептун» на 24 сентября 2026 года, начало в 15:00, на 45 минут.\n\nВерни ТОЛЬКО валидный JSON с аргументами функции, без markdown-обёртки и пояснений.",
+  "expected": {
+    "type": "json_schema",
+    "schema": {
+      "type": "object",
+      "required": ["room", "date", "time", "duration_min"],
+      "additionalProperties": false,
+      "properties": {
+        "room": {
+          "type": "string",
+          "const": "Нептун"
+        },
+        "date": {
+          "type": "string",
+          "const": "2026-09-24"
+        },
+        "time": {
+          "type": "string",
+          "const": "15:00"
+        },
+        "duration_min": {
+          "type": "integer",
+          "const": 45
+        }
+      }
+    }
+  },
+  "tags": ["function-calling", "booking"],
+  "weight": 1.5
+}

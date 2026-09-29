@@ -1,0 +1,28 @@
+{
+  "id": "instruction_following_005",
+  "name": "Один вариант перевода без комментариев",
+  "prompt": "Переведи на английский фразу «Сервер не отвечает уже пять минут». Верни ровно один вариант перевода — без кавычек, без пояснений и без транскрипции.",
+  "expected": {
+    "type": "all_of",
+    "checks": [
+      {
+        "type": "contains_all",
+        "values": ["server"]
+      },
+      {
+        "type": "contains_any",
+        "values": ["respond", "answer"]
+      },
+      {
+        "type": "not_contains",
+        "values": ["перевод", "translation", "вариант"]
+      },
+      {
+        "type": "word_count",
+        "max": 12
+      }
+    ]
+  },
+  "tags": ["instructions", "translation", "format"],
+  "weight": 1.5
+}

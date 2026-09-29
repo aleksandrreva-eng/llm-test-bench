@@ -1,0 +1,231 @@
+<!-- ===================== ВКЛАДКА "ИСТОРИЯ" ===================== -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 800" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="1280" height="800" fill="#1e1e1e" rx="8"/>
+  
+  <!-- Заголовок -->
+  <rect width="1280" height="36" fill="#2d2d30" rx="8"/>
+  <rect y="28" width="1280" height="8" fill="#2d2d30"/>
+  <text x="14" y="24" fill="#cccccc" font-size="13" font-weight="600">LLM Test Bench — История тестов</text>
+  <circle cx="1240" cy="18" r="6" fill="#5a5a5a"/>
+  <circle cx="1258" cy="18" r="6" fill="#5a5a5a"/>
+  <line x1="1232" y1="10" x2="1248" y2="26" stroke="#888" stroke-width="1.5"/>
+  
+  <!-- Вкладки -->
+  <rect y="36" width="1280" height="34" fill="#252526"/>
+  <text x="30" y="58" fill="#9d9d9d" font-size="13">Тестирование</text>
+  <text x="170" y="58" fill="#9d9d9d" font-size="13">Сервер</text>
+  <rect x="240" y="36" width="80" height="34" fill="#1e1e1e"/>
+  <text x="258" y="58" fill="#ffffff" font-size="13" font-weight="600">История</text>
+  <text x="340" y="58" fill="#9d9d9d" font-size="13">Сравнение</text>
+
+  <!-- Панель фильтров -->
+  <rect x="8" y="78" width="1264" height="70" fill="#252526" rx="4"/>
+  
+  <text x="20" y="100" fill="#cccccc" font-size="12">Модель:</text>
+  <rect x="76" y="88" width="180" height="26" fill="#1e1e1e" rx="3" stroke="#3e3e42"/>
+  <text x="86" y="105" fill="#ffffff" font-size="12">Все модели ▾</text>
+
+  <text x="276" y="100" fill="#cccccc" font-size="12">Тип теста:</text>
+  <rect x="340" y="88" width="150" height="26" fill="#1e1e1e" rx="3" stroke="#3e3e42"/>
+  <text x="350" y="105" fill="#ffffff" font-size="12">Все типы ▾</text>
+
+  <text x="510" y="100" fill="#cccccc" font-size="12">Дата:</text>
+  <rect x="550" y="88" width="110" height="26" fill="#1e1e1e" rx="3" stroke="#3e3e42"/>
+  <text x="560" y="105" fill="#ffffff" font-size="12">23.09.2026</text>
+  <text x="670" y="105" fill="#cccccc" font-size="12">—</text>
+  <rect x="686" y="88" width="110" height="26" fill="#1e1e1e" rx="3" stroke="#3e3e42"/>
+  <text x="696" y="105" fill="#ffffff" font-size="12">23.09.2026</text>
+
+  <text x="816" y="100" fill="#cccccc" font-size="12">Режим:</text>
+  <rect x="866" y="88" width="130" height="26" fill="#1e1e1e" rx="3" stroke="#3e3e42"/>
+  <text x="876" y="105" fill="#ffffff" font-size="12">Все ▾</text>
+
+  <rect x="1016" y="88" width="100" height="26" fill="#0e639c" rx="3"/>
+  <text x="1042" y="105" fill="#ffffff" font-size="12">Применить</text>
+  <rect x="1126" y="88" width="90" height="26" fill="#3e3e42" rx="3"/>
+  <text x="1150" y="105" fill="#cccccc" font-size="12">Сброс</text>
+
+  <!-- Панель действий -->
+  <text x="20" y="170" fill="#cccccc" font-size="12">Найдено: 47 файлов · выбрано: 3</text>
+  
+  <rect x="200" y="154" width="110" height="26" fill="#3e3e42" rx="3"/>
+  <text x="220" y="171" fill="#cccccc" font-size="12">☑ Все</text>
+  <rect x="320" y="154" width="110" height="26" fill="#3e3e42" rx="3"/>
+  <text x="340" y="171" fill="#cccccc" font-size="12">☐ Снять</text>
+  <rect x="440" y="154" width="160" height="26" fill="#0e639c" rx="3"/>
+  <text x="460" y="171" fill="#ffffff" font-size="12">📊 Сравнить выбранные</text>
+  <rect x="610" y="154" width="140" height="26" fill="#3e3e42" rx="3"/>
+  <text x="630" y="171" fill="#cccccc" font-size="12">🗑 Удалить</text>
+  <rect x="760" y="154" width="150" height="26" fill="#3e3e42" rx="3"/>
+  <text x="778" y="171" fill="#cccccc" font-size="12">📁 Открыть папку</text>
+
+  <!-- Заголовки таблицы -->
+  <rect x="8" y="192" width="1264" height="30" fill="#2d2d30"/>
+  <text x="36" y="212" fill="#cccccc" font-size="12" font-weight="600">☑</text>
+  <text x="70" y="212" fill="#cccccc" font-size="12" font-weight="600">Файл</text>
+  <text x="400" y="212" fill="#cccccc" font-size="12" font-weight="600">Модель</text>
+  <text x="640" y="212" fill="#cccccc" font-size="12" font-weight="600">Тип теста</text>
+  <text x="790" y="212" fill="#cccccc" font-size="12" font-weight="600">Прогонов</text>
+  <text x="890" y="212" fill="#cccccc" font-size="12" font-weight="600">Tok/s</text>
+  <text x="970" y="212" fill="#cccccc" font-size="12" font-weight="600">Latency</text>
+  <text x="1060" y="212" fill="#cccccc" font-size="12" font-weight="600">Статус</text>
+  <text x="1150" y="212" fill="#cccccc" font-size="12" font-weight="600">Действия</text>
+
+  <!-- Строка 1 - выбрана -->
+  <rect x="8" y="222" width="1264" height="36" fill="#094771"/>
+  <rect x="28" y="232" width="14" height="14" fill="#0e639c" rx="2" stroke="#4ec9b0"/>
+  <path d="M30 239 l3 3 l5 -6" stroke="#ffffff" stroke-width="2" fill="none"/>
+  <text x="70" y="245" fill="#ffffff" font-size="12" font-family="Consolas, monospace">qwen2.5-7b_chat_20260923_141200.json</text>
+  <text x="400" y="245" fill="#ffffff" font-size="12">qwen2.5-7b</text>
+  <text x="640" y="245" fill="#ffffff" font-size="12">chat_single</text>
+  <text x="790" y="245" fill="#ffffff" font-size="12">3</text>
+  <text x="890" y="245" fill="#4ec9b0" font-size="12">45.7</text>
+  <text x="970" y="245" fill="#ffffff" font-size="12">1205 ms</text>
+  <circle cx="1072" cy="240" r="6" fill="#4ec9b0"/>
+  <text x="1084" y="245" fill="#4ec9b0" font-size="12">OK</text>
+  <text x="1150" y="245" fill="#4ec9b0" font-size="12">👁 📊</text>
+
+  <!-- Строка 2 - выбрана -->
+  <rect x="8" y="258" width="1264" height="36" fill="#094771"/>
+  <rect x="28" y="268" width="14" height="14" fill="#0e639c" rx="2" stroke="#4ec9b0"/>
+  <path d="M30 275 l3 3 l5 -6" stroke="#ffffff" stroke-width="2" fill="none"/>
+  <text x="70" y="281" fill="#ffffff" font-size="12" font-family="Consolas, monospace">llama-3.1-8b_chat_20260923_141530.json</text>
+  <text x="400" y="281" fill="#ffffff" font-size="12">llama-3.1-8b</text>
+  <text x="640" y="281" fill="#ffffff" font-size="12">chat_single</text>
+  <text x="790" y="281" fill="#ffffff" font-size="12">3</text>
+  <text x="890" y="281" fill="#4ec9b0" font-size="12">52.3</text>
+  <text x="970" y="281" fill="#ffffff" font-size="12">1050 ms</text>
+  <circle cx="1072" cy="276" r="6" fill="#4ec9b0"/>
+  <text x="1084" y="281" fill="#4ec9b0" font-size="12">OK</text>
+  <text x="1150" y="281" fill="#4ec9b0" font-size="12">👁 📊</text>
+
+  <!-- Строка 3 - выбрана -->
+  <rect x="8" y="294" width="1264" height="36" fill="#094771"/>
+  <rect x="28" y="304" width="14" height="14" fill="#0e639c" rx="2" stroke="#4ec9b0"/>
+  <path d="M30 311 l3 3 l5 -6" stroke="#ffffff" stroke-width="2" fill="none"/>
+  <text x="70" y="317" fill="#ffffff" font-size="12" font-family="Consolas, monospace">gemma-2-9b_chat_20260923_141800.json</text>
+  <text x="400" y="317" fill="#ffffff" font-size="12">gemma-2-9b</text>
+  <text x="640" y="317" fill="#ffffff" font-size="12">chat_single</text>
+  <text x="790" y="317" fill="#ffffff" font-size="12">3</text>
+  <text x="890" y="317" fill="#4ec9b0" font-size="12">41.2</text>
+  <text x="970" y="317" fill="#ffffff" font-size="12">1340 ms</text>
+  <circle cx="1072" cy="312" r="6" fill="#4ec9b0"/>
+  <text x="1084" y="317" fill="#4ec9b0" font-size="12">OK</text>
+  <text x="1150" y="317" fill="#4ec9b0" font-size="12">👁 📊</text>
+
+  <!-- Строка 4 -->
+  <rect x="8" y="330" width="1264" height="36" fill="#252526"/>
+  <rect x="28" y="340" width="14" height="14" fill="#1e1e1e" rx="2" stroke="#5a5a5a"/>
+  <text x="70" y="353" fill="#cccccc" font-size="12" font-family="Consolas, monospace">qwen2.5-7b_agent_20260923_142000.json</text>
+  <text x="400" y="353" fill="#cccccc" font-size="12">qwen2.5-7b</text>
+  <text x="640" y="353" fill="#cccccc" font-size="12">agent_tools</text>
+  <text x="790" y="353" fill="#cccccc" font-size="12">5</text>
+  <text x="890" y="353" fill="#dcdcaa" font-size="12">38.5</text>
+  <text x="970" y="353" fill="#cccccc" font-size="12">1520 ms</text>
+  <circle cx="1072" cy="348" r="6" fill="#dcdcaa"/>
+  <text x="1084" y="353" fill="#dcdcaa" font-size="12">WARN</text>
+  <text x="1150" y="353" fill="#cccccc" font-size="12">👁 📊</text>
+
+  <!-- Строка 5 -->
+  <rect x="8" y="366" width="1264" height="36" fill="#252526"/>
+  <rect x="28" y="376" width="14" height="14" fill="#1e1e1e" rx="2" stroke="#5a5a5a"/>
+  <text x="70" y="389" fill="#cccccc" font-size="12" font-family="Consolas, monospace">llama-3.1-8b_agent_20260923_142300.json</text>
+  <text x="400" y="389" fill="#cccccc" font-size="12">llama-3.1-8b</text>
+  <text x="640" y="389" fill="#cccccc" font-size="12">agent_tools</text>
+  <text x="790" y="389" fill="#cccccc" font-size="12">5</text>
+  <text x="890" y="389" fill="#f48771" font-size="12">—</text>
+  <text x="970" y="389" fill="#f48771" font-size="12">timeout</text>
+  <circle cx="1072" cy="384" r="6" fill="#f48771"/>
+  <text x="1084" y="389" fill="#f48771" font-size="12">FAIL</text>
+  <text x="1150" y="389" fill="#cccccc" font-size="12">👁 📊</text>
+
+  <!-- Строка 6 -->
+  <rect x="8" y="402" width="1264" height="36" fill="#252526"/>
+  <rect x="28" y="412" width="14" height="14" fill="#1e1e1e" rx="2" stroke="#5a5a5a"/>
+  <text x="70" y="425" fill="#cccccc" font-size="12" font-family="Consolas, monospace">mistral-7b_chat_20260923_142500.json</text>
+  <text x="400" y="425" fill="#cccccc" font-size="12">mistral-7b</text>
+  <text x="640" y="425" fill="#cccccc" font-size="12">chat_multi</text>
+  <text x="790" y="425" fill="#cccccc" font-size="12">3</text>
+  <text x="890" y="425" fill="#4ec9b0" font-size="12">48.9</text>
+  <text x="970" y="425" fill="#cccccc" font-size="12">1120 ms</text>
+  <circle cx="1072" cy="420" r="6" fill="#4ec9b0"/>
+  <text x="1084" y="425" fill="#4ec9b0" font-size="12">OK</text>
+  <text x="1150" y="425" fill="#cccccc" font-size="12">👁 📊</text>
+
+  <!-- Строка 7 -->
+  <rect x="8" y="438" width="1264" height="36" fill="#252526"/>
+  <rect x="28" y="448" width="14" height="14" fill="#1e1e1e" rx="2" stroke="#5a5a5a"/>
+  <text x="70" y="461" fill="#cccccc" font-size="12" font-family="Consolas, monospace">gemma-2-9b_speed_20260923_142700.json</text>
+  <text x="400" y="461" fill="#cccccc" font-size="12">gemma-2-9b</text>
+  <text x="640" y="461" fill="#cccccc" font-size="12">speed</text>
+  <text x="790" y="461" fill="#cccccc" font-size="12">10</text>
+  <text x="890" y="461" fill="#4ec9b0" font-size="12">42.1</text>
+  <text x="970" y="461" fill="#cccccc" font-size="12">1290 ms</text>
+  <circle cx="1072" cy="456" r="6" fill="#4ec9b0"/>
+  <text x="1084" y="461" fill="#4ec9b0" font-size="12">OK</text>
+  <text x="1150" y="461" fill="#cccccc" font-size="12">👁 📊</text>
+
+  <!-- Строка 8 -->
+  <rect x="8" y="474" width="1264" height="36" fill="#252526"/>
+  <rect x="28" y="484" width="14" height="14" fill="#1e1e1e" rx="2" stroke="#5a5a5a"/>
+  <text x="70" y="497" fill="#cccccc" font-size="12" font-family="Consolas, monospace">phi-3-medium_chat_20260923_143000.json</text>
+  <text x="400" y="497" fill="#cccccc" font-size="12">phi-3-medium</text>
+  <text x="640" y="497" fill="#cccccc" font-size="12">chat_single</text>
+  <text x="790" y="497" fill="#cccccc" font-size="12">3</text>
+  <text x="890" y="497" fill="#4ec9b0" font-size="12">36.7</text>
+  <text x="970" y="497" fill="#cccccc" font-size="12">1580 ms</text>
+  <circle cx="1072" cy="492" r="6" fill="#4ec9b0"/>
+  <text x="1084" y="497" fill="#4ec9b0" font-size="12">OK</text>
+  <text x="1150" y="497" fill="#cccccc" font-size="12">👁 📊</text>
+
+  <!-- Строка 9 -->
+  <rect x="8" y="510" width="1264" height="36" fill="#252526"/>
+  <rect x="28" y="520" width="14" height="14" fill="#1e1e1e" rx="2" stroke="#5a5a5a"/>
+  <text x="70" y="533" fill="#cccccc" font-size="12" font-family="Consolas, monospace">deepseek-coder_chat_20260923_143200.json</text>
+  <text x="400" y="533" fill="#cccccc" font-size="12">deepseek-coder</text>
+  <text x="640" y="533" fill="#cccccc" font-size="12">chat_single</text>
+  <text x="790" y="533" fill="#cccccc" font-size="12">3</text>
+  <text x="890" y="533" fill="#4ec9b0" font-size="12">55.4</text>
+  <text x="970" y="533" fill="#cccccc" font-size="12">980 ms</text>
+  <circle cx="1072" cy="528" r="6" fill="#4ec9b0"/>
+  <text x="1084" y="533" fill="#4ec9b0" font-size="12">OK</text>
+  <text x="1150" y="533" fill="#cccccc" font-size="12">👁 📊</text>
+
+  <!-- Строка 10 -->
+  <rect x="8" y="546" width="1264" height="36" fill="#252526"/>
+  <rect x="28" y="556" width="14" height="14" fill="#1e1e1e" rx="2" stroke="#5a5a5a"/>
+  <text x="70" y="569" fill="#cccccc" font-size="12" font-family="Consolas, monospace">yi-1.5-9b_chat_20260923_143400.json</text>
+  <text x="400" y="569" fill="#cccccc" font-size="12">yi-1.5-9b</text>
+  <text x="640" y="569" fill="#cccccc" font-size="12">chat_single</text>
+  <text x="790" y="569" fill="#cccccc" font-size="12">3</text>
+  <text x="890" y="569" fill="#4ec9b0" font-size="12">44.2</text>
+  <text x="970" y="569" fill="#cccccc" font-size="12">1230 ms</text>
+  <circle cx="1072" cy="564" r="6" fill="#4ec9b0"/>
+  <text x="1084" y="569" fill="#4ec9b0" font-size="12">OK</text>
+  <text x="1150" y="569" fill="#cccccc" font-size="12">👁 📊</text>
+
+  <!-- Скроллбар -->
+  <rect x="1264" y="222" width="8" height="360" fill="#3e3e42" rx="4"/>
+  <rect x="1264" y="222" width="8" height="150" fill="#5a5a5a" rx="4"/>
+
+  <!-- Пагинация -->
+  <rect x="8" y="596" width="1264" height="40" fill="#252526" rx="4"/>
+  <text x="20" y="621" fill="#cccccc" font-size="12">Показано 10 из 47</text>
+  <rect x="1050" y="604" width="30" height="24" fill="#3e3e42" rx="3"/>
+  <text x="1061" y="621" fill="#cccccc" font-size="12">◀</text>
+  <rect x="1086" y="604" width="30" height="24" fill="#0e639c" rx="3"/>
+  <text x="1097" y="621" fill="#ffffff" font-size="12">1</text>
+  <rect x="1122" y="604" width="30" height="24" fill="#3e3e42" rx="3"/>
+  <text x="1133" y="621" fill="#cccccc" font-size="12">2</text>
+  <rect x="1158" y="604" width="30" height="24" fill="#3e3e42" rx="3"/>
+  <text x="1169" y="621" fill="#cccccc" font-size="12">3</text>
+  <rect x="1194" y="604" width="30" height="24" fill="#3e3e42" rx="3"/>
+  <text x="1205" y="621" fill="#cccccc" font-size="12">▶</text>
+  <rect x="1236" y="604" width="30" height="24" fill="#3e3e42" rx="3"/>
+  <text x="1242" y="621" fill="#cccccc" font-size="12">10</text>
+
+  <!-- Статус-бар -->
+  <rect x="8" y="784" width="1264" height="12" fill="#007acc"/>
+  <text x="16" y="793" fill="#ffffff" font-size="10">История · 47 файлов · 3 выбрано · 12.4 MB</text>
+  <text x="1180" y="793" fill="#ffffff" font-size="10">v1.0.0</text>
+</svg>

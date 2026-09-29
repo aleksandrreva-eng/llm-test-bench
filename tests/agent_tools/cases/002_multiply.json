@@ -1,0 +1,17 @@
+{
+  "id": "agent_tools_002",
+  "name": "Умножение чисел",
+  "prompt": "Доступны инструменты:\n- get_weather(city: string) — узнать погоду в городе\n- multiply(a: number, b: number) — умножить два числа\n- search_files(path: string, mask: string) — найти файлы по маске\n- send_email(to: string, subject: string) — отправить письмо\n- get_time(city: string) — узнать время в городе\n\nЗадача: Умножь 12 на 8.\n\nОтветь ТОЛЬКО валидным JSON вида {\"name\": \"<инструмент>\", \"arguments\": {...}} без markdown-обёртки.",
+  "expected": {
+    "type": "tool_call",
+    "tool_call": {
+      "name": "multiply",
+      "arguments": {
+        "a": 12,
+        "b": 8
+      }
+    }
+  },
+  "tags": ["tools", "numbers"],
+  "weight": 1.0
+}

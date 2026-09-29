@@ -1,0 +1,140 @@
+{
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "get_weather",
+        "description": "Узнать текущую погоду в городе",
+        "parameters": {
+          "type": "object",
+          "required": ["city"],
+          "properties": {
+            "city": {
+              "type": "string",
+              "description": "Название города"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "multiply",
+        "description": "Умножить два числа",
+        "parameters": {
+          "type": "object",
+          "required": ["a", "b"],
+          "properties": {
+            "a": {
+              "type": "number",
+              "description": "Первый множитель"
+            },
+            "b": {
+              "type": "number",
+              "description": "Второй множитель"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "search_files",
+        "description": "Найти файлы в папке по маске",
+        "parameters": {
+          "type": "object",
+          "required": ["path", "mask"],
+          "properties": {
+            "path": {
+              "type": "string",
+              "description": "Папка, в которой искать"
+            },
+            "mask": {
+              "type": "string",
+              "description": "Маска имени файла, например *.gguf"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "send_email",
+        "description": "Отправить письмо",
+        "parameters": {
+          "type": "object",
+          "required": ["to", "subject"],
+          "properties": {
+            "to": {
+              "type": "string",
+              "description": "Адрес получателя"
+            },
+            "subject": {
+              "type": "string",
+              "description": "Тема письма"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "send_sms",
+        "description": "Отправить SMS на телефон",
+        "parameters": {
+          "type": "object",
+          "required": ["phone", "message"],
+          "properties": {
+            "phone": {
+              "type": "string",
+              "description": "Номер телефона"
+            },
+            "message": {
+              "type": "string",
+              "description": "Текст сообщения"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "get_time",
+        "description": "Узнать текущее время в городе",
+        "parameters": {
+          "type": "object",
+          "required": ["city"],
+          "properties": {
+            "city": {
+              "type": "string",
+              "description": "Название города"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "set_volume",
+        "description": "Установить уровень громкости",
+        "parameters": {
+          "type": "object",
+          "required": ["level"],
+          "properties": {
+            "level": {
+              "type": "string",
+              "description": "Уровень громкости",
+              "enum": ["low", "medium", "high"]
+            }
+          }
+        }
+      }
+    }
+  ]
+}

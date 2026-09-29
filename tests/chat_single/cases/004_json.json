@@ -1,0 +1,32 @@
+{
+  "id": "chat_single_004",
+  "name": "Ответ строго в JSON",
+  "prompt": "Верни данные о книге «Мастер и Маргарита» в виде JSON с полями title (строка), author (строка), year (число). Верни ТОЛЬКО валидный JSON без markdown-обёртки и пояснений.",
+  "expected": {
+    "type": "json_schema",
+    "schema": {
+      "type": "object",
+      "required": ["title", "author", "year"],
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 3
+        },
+        "author": {
+          "type": "string",
+          "minLength": 3
+        },
+        "year": {
+          "type": "integer",
+          "minimum": 1900,
+          "maximum": 2100
+        }
+      }
+    }
+  },
+  "params": {
+    "max_tokens": 192
+  },
+  "tags": ["format", "json"],
+  "weight": 1.5
+}

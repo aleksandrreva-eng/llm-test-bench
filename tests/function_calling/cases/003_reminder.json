@@ -1,0 +1,28 @@
+{
+  "id": "function_calling_003",
+  "name": "Напоминание с повтором",
+  "prompt": "Функция set_reminder(text: string, datetime: string, repeat: string) ставит напоминание. Поле repeat принимает none, daily, weekly или monthly.\n\nЗадача: напомни мне каждый понедельник в 9:00 о планёрке.\n\nВерни ТОЛЬКО валидный JSON с аргументами функции, без markdown-обёртки и пояснений.",
+  "expected": {
+    "type": "json_schema",
+    "schema": {
+      "type": "object",
+      "required": ["text", "datetime", "repeat"],
+      "properties": {
+        "text": {
+          "type": "string",
+          "minLength": 3
+        },
+        "datetime": {
+          "type": "string",
+          "minLength": 5
+        },
+        "repeat": {
+          "type": "string",
+          "enum": ["none", "daily", "weekly", "monthly"]
+        }
+      }
+    }
+  },
+  "tags": ["function-calling", "reminder"],
+  "weight": 1.5
+}

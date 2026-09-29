@@ -1,0 +1,14 @@
+{
+  "id": "context_16000",
+  "name": "Иголка в стоге, ~16K токенов",
+  "generator": "needle_in_haystack",
+  "target_tokens": 16000,
+  "needle": "МЕЛЬНИКОВ-5527",
+  "question": "Какой код доступа указан в документе? Ответь только кодом.",
+  "expected": {
+    "type": "contains_any",
+    "values": ["МЕЛЬНИКОВ-5527"]
+  },
+  "tags": ["context", "needle"],
+  "weight": 1.0
+}

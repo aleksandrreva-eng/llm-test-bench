@@ -1,0 +1,19 @@
+{
+  "id": "agent_tools_010",
+  "name": "Инструмента для задачи нет — не выдумывать",
+  "prompt": "Доступны инструменты:\n- get_weather(city: string) — узнать погоду в городе\n- multiply(a: number, b: number) — умножить два числа\n- search_files(path: string, mask: string) — найти файлы по маске\n- send_email(to: string, subject: string) — отправить письмо\n- send_sms(phone: string, message: string) — отправить SMS\n- get_time(city: string) — узнать время в городе\n- set_volume(level: string) — установить уровень громкости\n\nЗадача: забронируй отель в Казани на 12 октября.\n\nПодходящего инструмента в списке нет. Не выдумывай новый: ответь обычным текстом и скажи, что нужного инструмента нет.",
+  "expected": {
+    "type": "all_of",
+    "checks": [
+      {
+        "type": "no_tool_call"
+      },
+      {
+        "type": "contains_any",
+        "values": ["нет подходящ", "не подходит", "отсутству", "не могу", "нет инструмент", "не хватает", "не входит"]
+      }
+    ]
+  },
+  "tags": ["tools", "no-tool", "hard"],
+  "weight": 2.0
+}

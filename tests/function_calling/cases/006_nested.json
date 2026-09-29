@@ -1,0 +1,36 @@
+{
+  "id": "function_calling_006",
+  "name": "Вложенный объект в аргументе",
+  "prompt": "Функция create_user(name: string, address: object) создаёт пользователя. Поле address — объект с полями city (строка) и street (строка).\n\nЗадача: создай пользователя с именем Иван, город Казань, улица Баумана.\n\nВерни ТОЛЬКО валидный JSON с аргументами функции, без markdown-обёртки и пояснений.",
+  "expected": {
+    "type": "json_schema",
+    "schema": {
+      "type": "object",
+      "required": ["name", "address"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "Иван"
+        },
+        "address": {
+          "type": "object",
+          "required": ["city", "street"],
+          "additionalProperties": false,
+          "properties": {
+            "city": {
+              "type": "string",
+              "pattern": "Казан"
+            },
+            "street": {
+              "type": "string",
+              "pattern": "Бауман"
+            }
+          }
+        }
+      }
+    }
+  },
+  "tags": ["function-calling", "nested", "hard"],
+  "weight": 2.0
+}

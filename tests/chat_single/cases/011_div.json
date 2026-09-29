@@ -1,0 +1,14 @@
+{
+  "id": "chat_single_011",
+  "name": "Деление без пояснений",
+  "prompt": "Вычисли 256 разделить на 4. Верни только число, без пояснений и знаков препинания.",
+  "expected": {
+    "type": "exact_match",
+    "value": "64"
+  },
+  "params": {
+    "max_tokens": 64
+  },
+  "tags": ["math", "format"],
+  "weight": 1.0
+}

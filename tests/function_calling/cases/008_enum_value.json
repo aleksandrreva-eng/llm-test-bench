@@ -1,0 +1,21 @@
+{
+  "id": "function_calling_008",
+  "name": "Значение из закрытого списка",
+  "prompt": "Функция set_log_level(level: string) принимает уровень логирования. Допустимые значения: debug, info, warning, error.\n\nЗадача: включи самый подробный уровень логирования.\n\nВерни ТОЛЬКО валидный JSON с аргументами функции, без markdown-обёртки и пояснений.",
+  "expected": {
+    "type": "json_schema",
+    "schema": {
+      "type": "object",
+      "required": ["level"],
+      "additionalProperties": false,
+      "properties": {
+        "level": {
+          "type": "string",
+          "const": "debug"
+        }
+      }
+    }
+  },
+  "tags": ["function-calling", "enum", "hard"],
+  "weight": 2.0
+}

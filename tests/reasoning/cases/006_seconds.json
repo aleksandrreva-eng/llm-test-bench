@@ -1,0 +1,20 @@
+{
+  "id": "reasoning_006",
+  "name": "Часы, минуты и секунды в секунды",
+  "prompt": "Сколько секунд в 2 часах 45 минутах и 30 секундах? Ответь одним числом без пояснений.",
+  "expected": {
+    "type": "all_of",
+    "checks": [
+      {
+        "type": "regex",
+        "pattern": "\\b9930\\b"
+      },
+      {
+        "type": "word_count",
+        "max": 4
+      }
+    ]
+  },
+  "tags": ["reasoning", "math", "units"],
+  "weight": 1.0
+}

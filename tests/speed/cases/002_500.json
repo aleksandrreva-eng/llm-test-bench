@@ -1,0 +1,11 @@
+{
+  "id": "speed_500",
+  "name": "Префилл ~500 токенов",
+  "generator": "lorem_by_tokens",
+  "target_tokens": 500,
+  "params": {
+    "max_tokens": 128
+  },
+  "tags": ["speed", "medium"],
+  "weight": 1.0
+}
