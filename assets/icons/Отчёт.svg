@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 320" width="240" height="320">
+  <defs>
+    <linearGradient id="faceTop" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2a2a45"/>
+      <stop offset="100%" stop-color="#1e1e35"/>
+    </linearGradient>
+    <linearGradient id="faceLeft" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#151528"/>
+      <stop offset="100%" stop-color="#0e0e1c"/>
+    </linearGradient>
+    <linearGradient id="faceRight" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#20203a"/>
+      <stop offset="100%" stop-color="#16162a"/>
+    </linearGradient>
+    <linearGradient id="accentOrange" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <filter id="glowOrange">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <radialGradient id="shadow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#000" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <g transform="translate(120, 160)">
+    <ellipse cx="0" cy="90" rx="60" ry="15" fill="url(#shadow)"/>
+    <polygon points="0,-70 50,-40 0,-10 -50,-40" fill="url(#faceTop)" stroke="#2a2a45" stroke-width="1"/>
+    <polygon points="-50,-40 0,-10 0,60 -50,30" fill="url(#faceLeft)" stroke="#151528" stroke-width="1"/>
+    <polygon points="50,-40 0,-10 0,60 50,30" fill="url(#faceRight)" stroke="#20203a" stroke-width="1"/>
+    <polygon points="0,-70 50,-40 0,-10 -50,-40" fill="url(#accentOrange)" opacity="0.12"/>
+    <rect x="-30" y="-42" width="8" height="20" fill="#fbbf24" opacity="0.7" rx="1"/>
+    <rect x="-15" y="-32" width="8" height="30" fill="#fbbf24" opacity="0.9" rx="1"/>
+    <rect x="0" y="-38" width="8" height="24" fill="#fbbf24" opacity="0.8" rx="1"/>
+    <rect x="15" y="-25" width="8" height="37" fill="#fbbf24" opacity="1" rx="1"/>
+    <polyline points="-26,-42 -11,-32 4,-38 19,-25" fill="none" stroke="#f87171" stroke-width="2" filter="url(#glowOrange)"/>
+    <circle cx="-26" cy="-42" r="2.5" fill="#f87171" filter="url(#glowOrange)"/>
+    <circle cx="-11" cy="-32" r="2.5" fill="#f87171" filter="url(#glowOrange)"/>
+    <circle cx="4" cy="-38" r="2.5" fill="#f87171" filter="url(#glowOrange)"/>
+    <circle cx="19" cy="-25" r="2.5" fill="#f87171" filter="url(#glowOrange)"/>
+    <line x1="-40" y1="-25" x2="-10" y2="-8" stroke="#fbbf24" stroke-width="1.5" opacity="0.4"/>
+    <line x1="-40" y1="-15" x2="-10" y2="2" stroke="#fbbf24" stroke-width="1.5" opacity="0.3"/>
+    <line x1="-40" y1="-5" x2="-10" y2="12" stroke="#fbbf24" stroke-width="1.5" opacity="0.2"/>
+    <text x="0" y="105" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" fill="#8899aa">Отчёт</text>
+  </g>
+</svg>
