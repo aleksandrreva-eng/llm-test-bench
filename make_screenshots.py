@@ -61,6 +61,46 @@ def _note(message: str) -> None:
     print(message, flush=True)
 
 
+#: Путь к llama-server.exe для снимков. Настоящий путь выдаёт имя пользователя
+#: (`C:\Users\<имя>\...`), а снимки уезжают в публичный репозиторий и в PDF
+#: релиза — там ему не место. Значение подставляется в конфиг снимков, рабочий
+#: `config.json` при этом не трогается.
+SAFE_SERVER_PATH = (
+    r"C:\Users\user\AppData\Roaming\LlamaServerLauncherAvalonia\llama.cpp\llama-server.exe"
+)
+SAFE_HOME = r"C:\Users\user"
+
+
+def _anonymize(text: str) -> str:
+    """Заменить домашний каталог на обезличенный путь."""
+    home = str(Path.home())
+    return text.replace(home, SAFE_HOME).replace(home.replace("\\", "/"), SAFE_HOME)
+
+
+def _anonymize_logs(win: MainWindow) -> int:
+    """Убрать домашний путь из журналов перед снимком.
+
+    Строки журнала сервера приходят из автопоиска `llama-server` и содержат
+    настоящие пути машины. Хранятся они в `ServerLogTab._lines`, а вид
+    пересобирается из них `restyle_theme()` — значит, достаточно поправить
+    строки и перерисовать. Полоса прогона — обычный `QPlainTextEdit`.
+    """
+    changed = 0
+    tab = win.server_log
+    for i, (line, level) in enumerate(tab._lines):
+        fixed = _anonymize(line)
+        if fixed != line:
+            tab._lines[i] = (fixed, level)
+            changed += 1
+    if changed:
+        tab.restyle_theme()
+    run_text = win.run_log.toPlainText()
+    fixed_run = _anonymize(run_text)
+    if fixed_run != run_text:
+        win.run_log.setPlainText(fixed_run)
+    return changed
+
+
 def _take_theme_arg(argv: list[str]) -> str | None:
     """Вынуть `--theme X` из аргументов.
 
@@ -178,6 +218,7 @@ def shoot_manual(app: QApplication, win: MainWindow, suffix: str) -> None:
         return MANUAL / (stem + Path(name).suffix)
 
     # --- 1. Раздел «Тестирование» целиком -----------------------------
+    _anonymize_logs(win)
     win.rail.set_current("test")
     app.processEvents()
     _save(app, win, out("01-Тестирование.png"))
@@ -195,6 +236,7 @@ def shoot_manual(app: QApplication, win: MainWindow, suffix: str) -> None:
     # --- 6–7. Раздел «Сервер» ----------------------------------------
     win.rail.set_current("server")
     app.processEvents()
+    _anonymize_logs(win)
     _save(app, win, out("06-Сервер.png"))
     _save(app, win.server_log, out("07-Журнал-сервера.png"))
 
@@ -330,15 +372,19 @@ def main() -> int:
     theme_name = requested or getattr(cfg, "ui_theme", "dark") or "dark"
     suffix = "" if resolve(theme_name) == "dark" else "-светлая"
 
-    if manual:
-        # Прогоны для истории и сравнения — настоящие, из dist/results.
-        # Конфиг привязываем к своей копии, чтобы `save()` из окна не затёр
-        # рабочий config.json путями снимков.
-        if DEMO_RESULTS.is_dir():
-            cfg.results_dir = str(DEMO_RESULTS)
-        else:
-            _note("нет папки %s — история будет пустой" % DEMO_RESULTS)
-        cfg.bind(SHOT_CONFIG)
+    # Прогоны для истории и сравнения — настоящие, из dist/results: рабочий
+    # `results/` почти пуст, и без подмены обе таблицы выходят заглушкой.
+    if DEMO_RESULTS.is_dir():
+        cfg.results_dir = str(DEMO_RESULTS)
+    else:
+        _note("нет папки %s — история будет пустой" % DEMO_RESULTS)
+
+    # Привязка к копии конфига — в обоих режимах: `save()` из окна (закрытие
+    # окна, «Сохранить настройки») иначе перепишет рабочий `config.json`.
+    cfg.bind(SHOT_CONFIG)
+    # Настоящий путь к llama-server.exe виден в панели сервера, а имя
+    # пользователя в снимке, который уезжает в публичный репозиторий, лишнее.
+    cfg.llama_server_path = SAFE_SERVER_PATH
 
     app = QApplication(sys.argv)
     apply_theme(app, theme_name)
@@ -398,6 +444,7 @@ def main() -> int:
             elif section == "compare":
                 shoot_compare(app, win)
             app.processEvents()
+            _anonymize_logs(win)
             pix = win.grab()
             path = shot_path(name)
             pix.save(str(path))
