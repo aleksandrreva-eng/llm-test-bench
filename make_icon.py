@@ -1,11 +1,18 @@
-"""Сборка `icon.ico` из векторного исходника `assets/icons/app-icon.svg`.
+"""Сборка растровых производных иконки из векторных исходников `assets/icons/`.
+
+Два выхода:
+
+* `icon.ico` — из `app-icon.svg` (знак на тёмной плитке). Кадры 16, 24, 32, 48,
+  64, 128, 256.
+* `assets/icons/app-icon-mark.png` — из `app-icon-mark.svg` (тот же знак **без
+  подложки**), обрезанный по контуру с полем. Нужен там, где плитка мешает:
+  кадры рекламного ролика (`promo/make_frames.py`), README, светлые фоны.
 
 Зачем отдельный скрипт. Раньше в `icon.ico` лежал единственный кадр 118x132 —
-обрезанный растр куба «GGUF». Из-за единственного размера иконка мылилась в
-Проводнике на крупных значках и была мелкой в кадрах рекламного ролика. Исходник
-векторный, поэтому правильный путь — отрисовать каждый размер отдельно, а не
-уменьшать один большой растр: на 16x16 разница между векторным рендером и
-даунсэмплом видна невооружённым глазом.
+обрезанный растр. Из-за единственного размера иконка мылилась в Проводнике на
+крупных значках. Исходник векторный, поэтому правильный путь — отрисовать каждый
+размер отдельно, а не уменьшать один большой растр: на 16x16 разница между
+векторным рендером и даунсэмплом видна невооружённым глазом.
 
 Кадры пишутся **несжатым BMP (32 бита + AND-маска), а не PNG**. PNG-кадры внутри
 ICO понимает Windows Vista и новее, но их не понимает WiX, который собирает MSI
@@ -14,7 +21,8 @@ ICO понимает Windows Vista и новее, но их не понимае�
 
 Pillow здесь не нужен намеренно: его нет в `requirements.txt` приложения, а
 скрипт должен запускаться в `.venv` проекта. Байты кадра берутся прямо из QImage
-(в памяти `Format_ARGB32` лежит как BGRA — ровно то, что ждёт ICO).
+(в памяти `Format_ARGB32` лежит как BGRA — ровно то, что ждёт ICO), а обрезка
+знака — через `QImage.copy()`.
 
 Запуск:  .venv/Scripts/python.exe make_icon.py
 """
@@ -27,23 +35,31 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-SVG = ROOT / "assets" / "icons" / "app-icon.svg"
+ICONS = ROOT / "assets" / "icons"
+
+SVG = ICONS / "app-icon.svg"
 ICO = ROOT / "icon.ico"
+
+MARK_SVG = ICONS / "app-icon-mark.svg"
+MARK_PNG = ICONS / "app-icon-mark.png"
+MARK_PX = 1024
+#: Поле вокруг знака в PNG, доля от его большей стороны.
+MARK_MARGIN = 0.04
 
 #: Кадры. 24x24 Windows берёт для мелких списков, 256x256 — для «Крупных значков»
 #: и плиток; пропускать его нельзя, иначе Проводник растянет 128-й.
 SIZES = (16, 24, 32, 48, 64, 128, 256)
 
 
-def render(size: int):
+def render(svg: Path, size: int):
     """Отрисовать SVG в квадрат `size`x`size` с прозрачным фоном."""
     from PySide6.QtCore import Qt
     from PySide6.QtGui import QImage, QPainter
     from PySide6.QtSvg import QSvgRenderer
 
-    renderer = QSvgRenderer(str(SVG))
+    renderer = QSvgRenderer(str(svg))
     if not renderer.isValid():
-        raise RuntimeError(f"не разобрать SVG: {SVG}")
+        raise RuntimeError(f"не разобрать SVG: {svg}")
 
     image = QImage(size, size, QImage.Format_ARGB32)
     image.fill(Qt.transparent)
@@ -51,6 +67,53 @@ def render(size: int):
     renderer.render(painter)
     painter.end()
     return image
+
+
+def opaque_bounds(image) -> tuple[int, int, int, int] | None:
+    """Прямоугольник непрозрачных пикселей: `(left, top, right, bottom)`, right и
+    bottom — исключающие. `None`, если непрозрачных нет вовсе.
+
+    Своими руками, а не через `QImage.createAlphaMask()`: тот отдаёт
+    чёрно-белую маску, по которой границу пришлось бы искать так же.
+    """
+    width, height = image.width(), image.height()
+    stride = image.bytesPerLine()
+    raw = bytes(image.constBits())
+
+    left, top, right, bottom = width, height, -1, -1
+    for y in range(height):
+        alpha = raw[y * stride : y * stride + width * 4][3::4]
+        if not any(alpha):
+            continue
+        first = next(x for x in range(width) if alpha[x])
+        last = next(x for x in range(width - 1, -1, -1) if alpha[x])
+        left, right = min(left, first), max(right, last)
+        top, bottom = min(top, y), y
+    if right < 0:
+        return None
+    return left, top, right + 1, bottom + 1
+
+
+def write_mark_png() -> None:
+    """Знак без подложки — PNG, обрезанный по контуру с полем.
+
+    Без обрезки знак занимает меньше половины квадрата 512x512 (куб нарисован
+    по центру с запасом под плитку), и в кадре ролика он выглядел бы вдвое
+    мельче, чем задумано.
+    """
+    from PySide6.QtCore import QRect
+
+    image = render(MARK_SVG, MARK_PX)
+    box = opaque_bounds(image)
+    if box is None:
+        raise RuntimeError(f"{MARK_SVG}: нечего обрезать — всё прозрачное")
+
+    left, top, right, bottom = box
+    pad = int(round(max(right - left, bottom - top) * MARK_MARGIN))
+    left, top = max(0, left - pad), max(0, top - pad)
+    right = min(image.width(), right + pad)
+    bottom = min(image.height(), bottom + pad)
+    image.copy(QRect(left, top, right - left, bottom - top)).save(str(MARK_PNG), "PNG")
 
 
 def bmp_frame(image) -> bytes:
@@ -97,26 +160,30 @@ def build(frames: list[bytes]) -> bytes:
 
 
 def main() -> int:
-    if not SVG.is_file():
-        print(f"нет исходника: {SVG}")
-        return 1
+    for source in (SVG, MARK_SVG):
+        if not source.is_file():
+            print(f"нет исходника: {source}")
+            return 1
 
     from PySide6.QtWidgets import QApplication
 
     # Приложение нужно до первого рендера: без него не подхватываются системные
-    # шрифты, и надпись «GGUF» выходит пустыми квадратами. Платформа — обычная
+    # шрифты, и текст на иконке выходит пустыми квадратами. Платформа — обычная
     # `windows`, а не `offscreen`: у offscreen нет системных шрифтов.
     QApplication.instance() or QApplication([])
 
-    frames = [bmp_frame(render(size)) for size in SIZES]
+    frames = [bmp_frame(render(SVG, size)) for size in SIZES]
     data = build(frames)
 
     temporary = ICO.with_name(ICO.name + ".tmp")
     temporary.write_bytes(data)
     os.replace(temporary, ICO)
 
+    write_mark_png()
+
     print("кадры: " + ", ".join(f"{size}x{size}" for size in SIZES))
     print(f"записано: {ICO}  ({len(data) / 1024:.0f} КБ)")
+    print(f"записано: {MARK_PNG}  ({MARK_PNG.stat().st_size / 1024:.0f} КБ)")
     return 0
 
 

@@ -1,42 +1,88 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="52 92 136 136" width="512" height="512">
-  <!-- Иконка приложения: куб «GGUF» из Модель.svg без подписи вкладки и без
-       тени-подложки. Область обрезана по кубу (в исходнике он занимает
-       x 68..172, y 100..220) с полем ~16 единиц. Меняешь геометрию куба —
-       поправь viewBox, иначе иконка поедет. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="ttl desc">
+  <title id="ttl">LLM Test Bench</title>
+  <desc id="desc">Изометрический куб GGUF-модели: галочка — пройденные тесты, восходящие столбики — замеры производительности.</desc>
+
   <defs>
-    <linearGradient id="faceTop" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#2a2a45"/>
-      <stop offset="100%" stop-color="#1e1e35"/>
+    <!-- плитка -->
+    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#212a3a"/>
+      <stop offset="0.55" stop-color="#161b24"/>
+      <stop offset="1" stop-color="#0d1016"/>
     </linearGradient>
-    <linearGradient id="faceLeft" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#151528"/>
-      <stop offset="100%" stop-color="#0e0e1c"/>
+    <linearGradient id="tileRim" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.16"/>
+      <stop offset="0.5" stop-color="#ffffff" stop-opacity="0.03"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
     </linearGradient>
-    <linearGradient id="faceRight" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#20203a"/>
-      <stop offset="100%" stop-color="#16162a"/>
+    <radialGradient id="glow" cx="0.47" cy="0.42" r="0.62">
+      <stop offset="0" stop-color="#3b82f6" stop-opacity="0.40"/>
+      <stop offset="0.55" stop-color="#3b82f6" stop-opacity="0.10"/>
+      <stop offset="1" stop-color="#3b82f6" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="shade" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#000000" stop-opacity="0.55"/>
+      <stop offset="0.65" stop-color="#000000" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- грани куба -->
+    <linearGradient id="faceTop" x1="0.1" y1="0" x2="0.9" y2="1">
+      <stop offset="0" stop-color="#8ebcff"/>
+      <stop offset="1" stop-color="#5590f4"/>
     </linearGradient>
-    <linearGradient id="accentBlue" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#4da6ff"/>
-      <stop offset="100%" stop-color="#2563eb"/>
+    <linearGradient id="faceLeft" x1="0" y1="0" x2="0.75" y2="1">
+      <stop offset="0" stop-color="#3f84f8"/>
+      <stop offset="1" stop-color="#2a60d2"/>
     </linearGradient>
-    <filter id="glowBlue">
-      <feGaussianBlur stdDeviation="6" result="blur"/>
-      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-    </filter>
+    <linearGradient id="faceRight" x1="0.1" y1="0" x2="0.9" y2="1">
+      <stop offset="0" stop-color="#2a6aee"/>
+      <stop offset="1" stop-color="#163d8a"/>
+    </linearGradient>
+
+    <clipPath id="tileClip">
+      <rect width="512" height="512" rx="112"/>
+    </clipPath>
   </defs>
 
-  <g transform="translate(120, 160)">
-    <polygon points="0,-60 52,-30 0,0 -52,-30" fill="url(#faceTop)" stroke="#2a2a45" stroke-width="1"/>
-    <polygon points="-52,-30 0,0 0,60 -52,30" fill="url(#faceLeft)" stroke="#151528" stroke-width="1"/>
-    <polygon points="52,-30 0,0 0,60 52,30" fill="url(#faceRight)" stroke="#20203a" stroke-width="1"/>
-    <polygon points="0,-60 52,-30 0,0 -52,-30" fill="url(#accentBlue)" opacity="0.15"/>
-    <text x="0" y="-22" text-anchor="middle" font-family="Consolas, monospace" font-size="14" font-weight="bold" fill="#4da6ff" filter="url(#glowBlue)">GGUF</text>
-    <line x1="-42" y1="-18" x2="-10" y2="-2" stroke="#4da6ff" stroke-width="2" opacity="0.6"/>
-    <line x1="-42" y1="-8" x2="-10" y2="8" stroke="#4da6ff" stroke-width="2" opacity="0.4"/>
-    <line x1="-42" y1="2" x2="-10" y2="18" stroke="#4da6ff" stroke-width="2" opacity="0.3"/>
-    <circle cx="20" cy="-8" r="3" fill="#4da6ff" opacity="0.7" filter="url(#glowBlue)"/>
-    <circle cx="32" cy="-2" r="3" fill="#4da6ff" opacity="0.5"/>
-    <circle cx="20" cy="8" r="3" fill="#4da6ff" opacity="0.3"/>
+  <!-- фон-плитка -->
+  <g clip-path="url(#tileClip)">
+    <rect width="512" height="512" fill="url(#tile)"/>
+    <circle cx="236" cy="248" r="216" fill="url(#glow)"/>
   </g>
+  <rect x="0.75" y="0.75" width="510.5" height="510.5" rx="111.25"
+        fill="none" stroke="url(#tileRim)" stroke-width="1.5"/>
+
+  <!-- тень под кубом -->
+  <ellipse cx="238" cy="398" rx="150" ry="30" fill="url(#shade)"/>
+
+  <!-- куб: W(114,186) N(236,125) E(358,186) S(236,247), высота 142 -->
+  <g>
+    <!-- левая грань -->
+    <polygon points="114,186 236,247 236,389 114,328" fill="url(#faceLeft)"/>
+    <!-- правая грань -->
+    <polygon points="236,247 358,186 358,328 236,389" fill="url(#faceRight)"/>
+    <!-- верхняя грань -->
+    <polygon points="114,186 236,125 358,186 236,247" fill="url(#faceTop)"/>
+
+    <!-- столбики замеров на левой грани -->
+    <g fill="#eaf2ff" opacity="0.82">
+      <polygon points="145.7,329.7 145.7,287.1 162.8,295.6 162.8,338.2"/>
+      <polygon points="170.1,341.9 170.1,276.5 187.2,285.1 187.2,350.4"/>
+      <polygon points="194.5,354.1 194.5,266.0 211.6,274.6 211.6,362.6"/>
+    </g>
+
+    <!-- рёбра -->
+    <polyline points="114,186 236,125 358,186" fill="none"
+              stroke="#d6e7ff" stroke-opacity="0.40" stroke-width="2.5" stroke-linejoin="round"/>
+    <line x1="114" y1="186" x2="114" y2="328" stroke="#ffffff" stroke-opacity="0.10" stroke-width="2"/>
+    <line x1="236" y1="247" x2="236" y2="389" stroke="#cfe2ff" stroke-opacity="0.18" stroke-width="2"/>
+    <polyline points="236,247 358,186" fill="none"
+              stroke="#cfe2ff" stroke-opacity="0.22" stroke-width="2"/>
+    <polyline points="114,328 236,389 358,328" fill="none"
+              stroke="#0a1b3d" stroke-opacity="0.35" stroke-width="2.5" stroke-linejoin="round"/>
+  </g>
+
+  <!-- галочка на верхней грани: пройдено -->
+  <polyline points="207.0,195.9 268.0,209.3 282.6,170.3" fill="none"
+            stroke="#ffffff" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

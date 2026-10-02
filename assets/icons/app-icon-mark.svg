@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="ttl2 desc2">
+  <title id="ttl2">LLM Test Bench — знак</title>
+  <desc id="desc2">Куб GGUF-модели без подложки: для README, документации и светлых фонов.</desc>
+
+  <defs>
+    <linearGradient id="mTop" x1="0.1" y1="0" x2="0.9" y2="1">
+      <stop offset="0" stop-color="#8ebcff"/>
+      <stop offset="1" stop-color="#5590f4"/>
+    </linearGradient>
+    <linearGradient id="mLeft" x1="0" y1="0" x2="0.75" y2="1">
+      <stop offset="0" stop-color="#3f84f8"/>
+      <stop offset="1" stop-color="#2a60d2"/>
+    </linearGradient>
+    <linearGradient id="mRight" x1="0.1" y1="0" x2="0.9" y2="1">
+      <stop offset="0" stop-color="#2a6aee"/>
+      <stop offset="1" stop-color="#163d8a"/>
+    </linearGradient>
+  </defs>
+
+  <g>
+    <polygon points="114,186 236,247 236,389 114,328" fill="url(#mLeft)"/>
+    <polygon points="236,247 358,186 358,328 236,389" fill="url(#mRight)"/>
+    <polygon points="114,186 236,125 358,186 236,247" fill="url(#mTop)"/>
+
+    <g fill="#eaf2ff" opacity="0.82">
+      <polygon points="145.7,329.7 145.7,287.1 162.8,295.6 162.8,338.2"/>
+      <polygon points="170.1,341.9 170.1,276.5 187.2,285.1 187.2,350.4"/>
+      <polygon points="194.5,354.1 194.5,266.0 211.6,274.6 211.6,362.6"/>
+    </g>
+
+    <polyline points="114,186 236,125 358,186" fill="none"
+              stroke="#d6e7ff" stroke-opacity="0.40" stroke-width="2.5" stroke-linejoin="round"/>
+    <line x1="114" y1="186" x2="114" y2="328" stroke="#ffffff" stroke-opacity="0.10" stroke-width="2"/>
+    <line x1="236" y1="247" x2="236" y2="389" stroke="#cfe2ff" stroke-opacity="0.18" stroke-width="2"/>
+    <polyline points="236,247 358,186" fill="none"
+              stroke="#cfe2ff" stroke-opacity="0.22" stroke-width="2"/>
+    <polyline points="114,328 236,389 358,328" fill="none"
+              stroke="#0a1b3d" stroke-opacity="0.35" stroke-width="2.5" stroke-linejoin="round"/>
+  </g>
+
+  <polyline points="207.0,195.9 268.0,209.3 282.6,170.3" fill="none"
+            stroke="#ffffff" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
