@@ -1,0 +1,23 @@
+{
+  "id": "russian_017",
+  "name": "Перевод терминов на русский",
+  "prompt": "Переведи на русский: «The weights are quantized to four bits». Верни только перевод, без пояснений.",
+  "expected": {
+    "type": "all_of",
+    "checks": [
+      {
+        "type": "contains_all",
+        "values": ["вес", "квант"]
+      },
+      {
+        "type": "contains_any",
+        "values": ["четыр", "4"]
+      }
+    ]
+  },
+  "params": {
+    "max_tokens": 192
+  },
+  "tags": ["russian", "translation"],
+  "weight": 1.0
+}

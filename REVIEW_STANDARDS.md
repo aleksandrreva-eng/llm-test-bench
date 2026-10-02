@@ -132,8 +132,8 @@ git checkout -b review/<тема>      # например review/speed-metrics
 «советы» — это не блокер, но прочитайте их: правило R3 (магическое число) часто
 указывает на настоящее решение, которое забыли назвать.
 
-`check_*.py`, связанные с правкой, — прогнать. Числа ожидаемых проверок в
-`README.md` и в `MEMORY.md`.
+`check_*.py`, связанные с правкой, — прогнать. Полный прогон и сводку по всем
+проверкам даёт `check_all.py`.
 
 ### 4.3. Ревью (ревьюер)
 
@@ -165,7 +165,7 @@ git checkout -b review/<тема>      # например review/speed-metrics
 ## 2026-09-26 · review/speed-metrics · approve
 Ревьюер: CodeReviewExpert
 Ревизия: a1b2c3d
-Проверено: ruff check, format --check, check_review --staged, check_speed_metrics (49)
+Проверено: ruff check, format --check, check_review --staged, check_speed_metrics (68)
 Находки: нет
 Примечания: <необязательно>
 ```

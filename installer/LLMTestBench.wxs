@@ -5,8 +5,12 @@
   Собирать не напрямую, а через `make_msi.py`: он подставляет версию из
   `llmtestbench/__init__.py` и готовит RTF с текстом лицензии. Прямой вызов:
 
-    wix build -ext WixToolset.UI.wixext -d Version=1.0.0 ^
-        installer\LLMTestBench.wxs -o dist\LLMTestBench-1.0.0.msi
+    wix build -ext WixToolset.UI.wixext -ext WixToolset.Util.wixext ^
+        -d Version=1.0.3 installer\LLMTestBench.wxs ^
+        -o dist\LLMTestBench-1.0.3.msi
+
+  Два расширения, не одно: `UI` — мастер установки, `Util` — `RemoveFolderEx`
+  (чистка папки приложения при удалении, см. компонент `RemoveDataFolder`).
 
   Почему установка в профиль пользователя (`Scope="perUser"`), а не в
   Program Files: приложение портативное по устройству — оно пишет config.json,
@@ -15,12 +19,25 @@
   администратора, и приложение сломалось бы на первом же сохранении настроек.
   `%LOCALAPPDATA%\Programs` — то же место, куда ставятся VS Code и Chrome.
 
-  Проверено на собранном пакете (29.09.2026, Windows 11, учётка без прав
-  администратора):
+  Проверено на собранном пакете (29.09.2026 и 01.10.2026, Windows 11, учётка
+  без прав администратора):
     - `msiexec /i ... /qn` проходит молча, без запроса UAC, код возврата 0;
     - файлы — в `%LOCALAPPDATA%\Programs\LLMTestBench`, ярлык — в
       `%APPDATA%\Microsoft\Windows\Start Menu\Programs\LLM Test Bench`;
     - `msiexec /x` убирает папку, ярлык и ключ `HKCU\Software\LLMTestBench`;
+      папку — включая рабочие папки приложения (компонент `RemoveDataFolder`
+      ниже). Проверено 01.10.2026: установили, запустили приложение (оно
+      разложило 12 наборов, всего 198 объектов), удалили — папки нет;
+    - обновление поверх старой версии рабочие папки **не трогает**. Проверено
+      01.10.2026 на 1.0.2 → 1.0.3: `config.json`, `history.db` и
+      `results/run-1/result.json` пережили обновление дословно, объектов до и
+      после — 198, зарегистрированной осталась одна версия (1.0.3);
+    - **удалять надо при закрытом приложении.** Если оно запущено, MSI не может
+      удалить `logs\app.log` и падает с 1306 («другое приложение имеет
+      монопольный доступ к файлу»), после чего откатывает удаление целиком.
+      В тихом режиме (`/qn`) диалога «закройте приложение» нет, поэтому провал
+      молчаливый; в мастере Windows Installer предложит закрыть приложение сам.
+      Это поведение самого MSI, а не дефект чистки, но знать о нём надо;
     - запись в «Программах и компонентах» при этом оказалась в
       `HKLM\Software\Wow6432Node\...\Uninstall`, хотя лог установки сообщает,
       что свойство ALLUSERS удалено (то есть установка в профиль). Расхождение
@@ -28,7 +45,8 @@
       начинать стоит отсюда.
 -->
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
-     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui"
+     xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
 
   <Package
       Name="LLM Test Bench"
@@ -59,6 +77,14 @@
     <!-- ARPNOMODIFY здесь задавать нельзя: его уже определяет WixUI_InstallDir,
          и повторное объявление роняет сборку с WIX0091 (дубль символа). -->
 
+    <!-- Свойство вида
+         <Property Id="DATAFOLDER" Value="[INSTALLFOLDER]" /> WiX пропускает, но
+         ругается WIX1077: «illegal reference to another property». В таблице
+         Property такое значение остаётся строкой `[INSTALLFOLDER]`, и чистка
+         искала бы папку с этим именем — то есть молча ничего не удаляла.
+         Поэтому путь идёт через реестр: свойство `REMEMBERED_INSTALLFOLDER`
+         ниже заполняется поиском по реестру, а не ссылкой на каталог. -->
+
     <!-- ALLUSERS/MSIINSTALLPERUSER задавать бессмысленно: Scope="perUser" выше
          помечает пакет как LUA-совместимый (установка без прав администратора),
          а для такого пакета Windows Installer сам удаляет ALLUSERS и пишет в лог
@@ -73,7 +99,33 @@
     <Feature Id="Main" Title="LLM Test Bench" Level="1" AllowAbsent="no">
       <ComponentGroupRef Id="AppFiles" />
       <ComponentRef Id="StartMenuShortcut" />
+      <ComponentRef Id="RemoveDataFolder" />
     </Feature>
+
+    <!-- Путь к папке приложения — для чистки при удалении.
+
+         `RemoveFolderEx` (компонент `RemoveDataFolder` ниже) требует, чтобы
+         свойство с путём было заполнено ДО действия CostInitialize, и прямо
+         запрещает подставлять идентификатор каталога: «Directory ids cannot be
+         used». Поэтому `INSTALLFOLDER` тут не годится — в момент чистки он ещё
+         не развёрнут в путь, действие падает с
+         «WixRemoveFoldersEx: Error 0x80070057: Missing folder property:
+         INSTALLFOLDER» и проглатывает ошибку («will be translated to success
+         due to continue marking»), то есть молча ничего не удаляет.
+
+         Переставить действие после CostFinalize нельзя: оно пишет временные
+         строки в таблицу RemoveFile, а та читается раньше — при подсчёте
+         стоимости файлов. (Попытка задать `After="CostFinalize"` собирается, но
+         на порядок не влияет.)
+
+         Поэтому путь запоминается в реестре при установке и читается обратно
+         при удалении — приём «Remember Property» из документации WiX.
+         Реестр, а не идентификатор каталога, потому что читается он действием
+         AppSearch, которое идёт раньше CostInitialize. -->
+    <Property Id="REMEMBERED_INSTALLFOLDER" Secure="yes">
+      <RegistrySearch Id="RememberInstallFolder" Root="HKCU"
+                      Key="Software\LLMTestBench" Name="InstallDir" Type="raw" />
+    </Property>
   </Package>
 
   <!-- Куда ставим: %LOCALAPPDATA%\Programs\LLMTestBench -->
@@ -118,6 +170,37 @@
       <RemoveFolder Id="RemoveAppMenuFolder" Directory="AppMenuFolder" On="uninstall" />
       <RegistryValue Root="HKCU" Key="Software\LLMTestBench"
                      Name="installed" Type="integer" Value="1" KeyPath="yes" />
+    </Component>
+  </Fragment>
+
+  <Fragment>
+    <!-- Чистка папки при удалении.
+
+         Приложение портативное: рядом с .exe оно создаёт config.json, logs/,
+         results/, reports/, sessions/, history.db, tests/ и .cache/. MSI их не
+         ставил и сам не уберёт, поэтому после удаления папка оставалась со всем
+         этим хозяйством. `util:RemoveFolderEx` убирает дерево целиком.
+
+         **Условие `NOT UPGRADINGPRODUCTCODE` здесь обязательно, а не для
+         красоты.** При обновлении (`<MajorUpgrade>` выше) Windows Installer
+         сначала удаляет старую версию, и без условия чистка сносила бы прогоны,
+         историю и настройки пользователя на каждом обновлении — молча и
+         безвозвратно. `UPGRADINGPRODUCTCODE` выставлен только в сеансе удаления
+         старого продукта при обновлении, поэтому настоящее удаление от
+         обновления здесь и отличается.
+
+         Ключ компонента — запись в реестре: файла у него нет, а без KeyPath WiX
+         отказывается собирать компонент. Эта же запись хранит путь установки
+         для чистки — его читает свойство `REMEMBERED_INSTALLFOLDER` выше.
+         `[INSTALLFOLDER]` в значении разворачивается при установке, когда
+         каталоги уже посчитаны, а при удалении читается действием AppSearch,
+         которое идёт раньше CostInitialize, — то есть вовремя для чистки. -->
+    <Component Id="RemoveDataFolder" Directory="INSTALLFOLDER"
+               Guid="B7C41E52-3D68-4A91-9F04-2E6C8D5A1B73"
+               Condition="NOT UPGRADINGPRODUCTCODE">
+      <util:RemoveFolderEx On="uninstall" Property="REMEMBERED_INSTALLFOLDER" />
+      <RegistryValue Root="HKCU" Key="Software\LLMTestBench"
+                     Name="InstallDir" Type="string" Value="[INSTALLFOLDER]" KeyPath="yes" />
     </Component>
   </Fragment>
 

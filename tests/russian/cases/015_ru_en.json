@@ -1,0 +1,23 @@
+{
+  "id": "russian_015",
+  "name": "Перевод с русского на английский",
+  "prompt": "Переведи на английский: «Я хочу чашку крепкого чёрного чая». Верни только перевод, без пояснений.",
+  "expected": {
+    "type": "all_of",
+    "checks": [
+      {
+        "type": "contains_all",
+        "values": ["want", "tea"]
+      },
+      {
+        "type": "not_contains",
+        "values": ["хочу"]
+      }
+    ]
+  },
+  "params": {
+    "max_tokens": 192
+  },
+  "tags": ["russian", "translation"],
+  "weight": 1.0
+}

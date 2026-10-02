@@ -1,0 +1,14 @@
+{
+  "id": "russian_011",
+  "name": "Род существительного «тюль»",
+  "prompt": "Определи род слова «тюль»: мужской, женский или средний. Ответь одним словом, без пояснений.",
+  "expected": {
+    "type": "exact_match",
+    "value": "мужской"
+  },
+  "params": {
+    "max_tokens": 64
+  },
+  "tags": ["russian", "morphology", "hard"],
+  "weight": 1.0
+}

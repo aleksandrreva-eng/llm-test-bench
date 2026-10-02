@@ -1,0 +1,16 @@
+{
+  "id": "speed_gen_200",
+  "name": "Генерация: просьба 200 слов",
+  "generator": "lorem_by_tokens",
+  "target_tokens": 512,
+  "answer_words": 200,
+  "params": {
+    "max_tokens": 640
+  },
+  "expected": {
+    "type": "word_count",
+    "min": 150
+  },
+  "tags": ["speed", "generation", "short"],
+  "weight": 1.0
+}

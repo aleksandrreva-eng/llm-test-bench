@@ -1,0 +1,23 @@
+{
+  "id": "russian_019",
+  "name": "Извлечение данных в JSON с русскими ключами",
+  "prompt": "Извлеки данные из текста: «Иван Петров, 34 года, работает в Казани». Верни ТОЛЬКО валидный JSON без markdown-обёртки: {\"имя\": ..., \"возраст\": ..., \"город\": ...}.",
+  "expected": {
+    "type": "json_schema",
+    "schema": {
+      "type": "object",
+      "required": ["имя", "возраст", "город"],
+      "additionalProperties": false,
+      "properties": {
+        "имя": {"type": "string", "const": "Иван Петров"},
+        "возраст": {"type": "integer", "const": 34},
+        "город": {"type": "string", "const": "Казань"}
+      }
+    }
+  },
+  "params": {
+    "max_tokens": 192
+  },
+  "tags": ["russian", "format", "json"],
+  "weight": 1.5
+}

@@ -15,7 +15,12 @@
     "speed",
     "quality",
     "context_long",
-    "function_calling"
+    "function_calling",
+    "reasoning",
+    "instruction_following",
+    "robustness",
+    "code",
+    "russian"
   ],
   "default_test_set": "chat_single",
   "last_case_limit": 0,

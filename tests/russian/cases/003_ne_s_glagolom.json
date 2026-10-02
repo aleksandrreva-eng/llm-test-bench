@@ -1,0 +1,23 @@
+{
+  "id": "russian_003",
+  "name": "«Не» с глаголами пишется раздельно",
+  "prompt": "Раскрой скобки и запиши предложение правильно: «Он (не)знал правды». Верни только исправленное предложение.",
+  "expected": {
+    "type": "all_of",
+    "checks": [
+      {
+        "type": "contains_any",
+        "values": ["не знал"]
+      },
+      {
+        "type": "not_contains",
+        "values": ["незнал"]
+      }
+    ]
+  },
+  "params": {
+    "max_tokens": 128
+  },
+  "tags": ["russian", "spelling"],
+  "weight": 1.0
+}

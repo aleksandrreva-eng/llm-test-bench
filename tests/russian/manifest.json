@@ -1,0 +1,15 @@
+{
+  "id": "russian",
+  "name": "Русский язык",
+  "version": "1.0.0",
+  "description": "Работа с русским языком: орфография по правилам, морфология и согласование, понимание смысла, перевод, дисциплина формата. Все проверки детерминированные (regex, contains, exact_match, json_schema), без судьи — поэтому набор можно гонять на любой модели и сравнивать прогоны между собой. Регулярки сверяются с сырым ответом, а не с нормализованным: ё/е и регистр здесь значимы там, где значимы (ударение, жи/ши, -тся/-ться)",
+  "cases_count": 20,
+  "metrics": ["latency_ms", "tokens_per_sec", "tokens_in", "tokens_out"],
+  "scoring": "none",
+  "default_params": {
+    "temperature": 0.0,
+    "seed": 42,
+    "max_tokens": 256
+  },
+  "tags": ["russian", "spelling", "morphology", "semantics", "translation", "format", "hard"]
+}

@@ -11,7 +11,7 @@ HTML-отчёты, судья, история и сравнение, сборк�
 судьи, импорт YAML, печать сводной таблицы сравнения.
 """
 
-__version__ = "1.0.0"
+__version__ = "1.0.3"
 
 APP_NAME = "LLM Test Bench"
 APP_TITLE = "LLM Test Bench"

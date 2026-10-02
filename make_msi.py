@@ -9,10 +9,14 @@
   3. готовит `installer/License.rtf` из `LICENSE` для страницы лицензии;
   4. вызывает `wix build` и кладёт результат в `dist/`.
 
-Требуется WiX 4 (`dotnet tool install --global wix`) и расширение
-`WixToolset.UI.wixext` той же версии, что сам WiX:
+Требуется WiX 4 (`dotnet tool install --global wix`) и два расширения той же
+версии, что сам WiX:
 
     wix extension add -g WixToolset.UI.wixext/4.0.6
+    wix extension add -g WixToolset.Util.wixext/4.0.6
+
+`Util` нужен ради `util:RemoveFolderEx` — чистки папки приложения при удалении
+(подробности и оговорка про обновление — в шапке `installer/LLMTestBench.wxs`).
 
 Собирается установщик **в профиль пользователя** — подробности и причина
 в шапке `installer/LLMTestBench.wxs`.
@@ -84,7 +88,8 @@ def build(version: str) -> int:
         print(
             "Ошибка: не нашёл wix.exe.\n"
             "Поставьте WiX 4:  dotnet tool install --global wix\n"
-            "и расширение:     wix extension add -g WixToolset.UI.wixext/4.0.6"
+            "и расширения:     wix extension add -g WixToolset.UI.wixext/4.0.6\n"
+            "                  wix extension add -g WixToolset.Util.wixext/4.0.6"
         )
         return 1
 
@@ -98,6 +103,8 @@ def build(version: str) -> int:
         "build",
         "-ext",
         "WixToolset.UI.wixext",
+        "-ext",
+        "WixToolset.Util.wixext",
         "-d",
         "Version=%s" % version,
         str(WXS),

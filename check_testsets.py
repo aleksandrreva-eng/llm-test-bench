@@ -14,10 +14,15 @@
 
 from __future__ import annotations
 
+import shutil
 import sys
+import tempfile
 from pathlib import Path
 
+from llmtestbench import __version__
+from llmtestbench import config as cfg_module
 from llmtestbench.checks import run_check
+from llmtestbench.config import BUNDLE_STAMP_NAME, AppConfig
 from llmtestbench.testsets import discover_test_sets, load_test_set
 
 ROOT = Path(__file__).resolve().parent
@@ -456,6 +461,90 @@ def check_sets() -> int:
     return problems
 
 
+def check_frozen_copy() -> int:
+    """Копия наборов рядом с .exe: раскладывается и обновляется по версии.
+
+    Ловушка, ради которой проверка написана: копия делалась один раз («если
+    папки ещё нет») и после обновления приложения рядом оставались наборы
+    прошлой версии — новый набор в окне не появлялся, хотя в бандле он есть.
+    Проверяются три состояния: первый запуск, повторный (правки не затираются)
+    и смена версии (копия перезалита, прежняя отложена).
+    """
+    print("=== Копия наборов рядом с приложением (frozen) ===")
+    failures = 0
+
+    def check(name: str, ok: bool, detail: str = "") -> None:
+        nonlocal failures
+        if not ok:
+            failures += 1
+        mark = "OK  " if ok else "ПРОВАЛ"
+        tail = "" if ok else "  (%s)" % detail
+        print("  [%s] %-46s%s" % (mark, name, tail))
+
+    tmp = Path(tempfile.mkdtemp(prefix="llmtestbench_frozen_"))
+    real_bundle_root = cfg_module.bundle_root
+    had_frozen = getattr(sys, "frozen", False)
+    try:
+        bundle = tmp / "bundle"
+        (bundle / "tests" / "demo").mkdir(parents=True)
+        (bundle / "tests" / "demo" / "manifest.json").write_text(
+            '{"id": "demo", "cases_count": 0}', encoding="utf-8"
+        )
+
+        work = tmp / "app"
+        work.mkdir()
+        target = work / "tests"
+        cfg = AppConfig(tests_dir=str(target))
+
+        cfg_module.bundle_root = lambda: bundle
+        sys.frozen = True
+
+        # 1. первый запуск: копия разложена и помечена версией
+        cfg.init_frozen_resources()
+        check("первый запуск разложил наборы", (target / "demo" / "manifest.json").is_file())
+        stamp = target / BUNDLE_STAMP_NAME
+        check(
+            "штамп версии записан",
+            stamp.is_file() and stamp.read_text(encoding="utf-8").strip() == __version__,
+        )
+
+        # 2. повторный запуск той же версии: правку в копии не затирает
+        (target / "demo" / "my_case.json").write_text("{}", encoding="utf-8")
+        cfg.init_frozen_resources()
+        check("повторный запуск не затирает правки", (target / "demo" / "my_case.json").is_file())
+
+        # 3. версия сменилась: копия перезалита, прежняя отложена в backup
+        real_version = cfg_module.__version__
+        cfg_module.__version__ = "99.0.0"
+        try:
+            cfg.init_frozen_resources()
+        finally:
+            cfg_module.__version__ = real_version
+        check("смена версии перезалила наборы", not (target / "demo" / "my_case.json").is_file())
+        check(
+            "штамп обновлён под новую версию",
+            stamp.read_text(encoding="utf-8").strip() == "99.0.0",
+        )
+        backups = sorted(work.glob("tests.backup-*"))
+        check("прежняя копия отложена, а не удалена", len(backups) == 1, str(backups))
+        check(
+            "в отложенной копии сохранилась правка",
+            bool(backups) and (backups[0] / "demo" / "my_case.json").is_file(),
+        )
+    finally:
+        cfg_module.bundle_root = real_bundle_root
+        if not had_frozen:
+            try:
+                del sys.frozen
+            except AttributeError:
+                pass
+        shutil.rmtree(tmp, ignore_errors=True)
+
+    print("  провалов: %d" % failures)
+    print()
+    return failures
+
+
 def show_filter_demo() -> None:
     """Показать работу фильтра по тегам и лимита кейсов (п. 3.2 ТЗ)."""
     print("=== Фильтр по тегам и лимит ===")
@@ -480,6 +569,7 @@ def main() -> int:
     print("LLM Test Bench — проверка наборов и проверок\n")
     failures = check_checks()
     problems = check_sets()
+    problems += check_frozen_copy()
     show_filter_demo()
     if failures or problems:
         print(

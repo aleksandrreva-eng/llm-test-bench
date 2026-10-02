@@ -1,0 +1,27 @@
+{
+  "id": "russian_014",
+  "name": "Многозначность слова «ключ»",
+  "prompt": "Перечисли значения слова «ключ» — по одному на строку, коротко. Приведи не меньше трёх разных значений.",
+  "expected": {
+    "type": "all_of",
+    "checks": [
+      {
+        "type": "contains_all",
+        "values": ["родник"]
+      },
+      {
+        "type": "contains_any",
+        "values": ["двер", "скрипичн", "гаечн", "разводн", "шифр", "замок"]
+      },
+      {
+        "type": "word_count",
+        "min": 4
+      }
+    ]
+  },
+  "params": {
+    "max_tokens": 256
+  },
+  "tags": ["russian", "semantics"],
+  "weight": 1.0
+}

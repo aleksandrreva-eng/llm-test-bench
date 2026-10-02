@@ -1,0 +1,14 @@
+{
+  "id": "russian_010",
+  "name": "Ударение в слове «звонит»",
+  "prompt": "В слове «звонит» ударение падает на первый или на второй слог? Ответь только цифрой: 1 или 2.",
+  "expected": {
+    "type": "exact_match",
+    "value": "2"
+  },
+  "params": {
+    "max_tokens": 64
+  },
+  "tags": ["russian", "morphology", "hard"],
+  "weight": 1.0
+}

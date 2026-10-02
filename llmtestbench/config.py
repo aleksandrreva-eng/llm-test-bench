@@ -9,13 +9,20 @@ from __future__ import annotations
 import json
 import shutil
 import sys
+import time
 from dataclasses import asdict, dataclass, field, fields
 from pathlib import Path
 from typing import Any
 
-from .atomic_io import write_json_atomic
+from . import __version__
+from .atomic_io import write_json_atomic, write_text_atomic
 
 CONFIG_NAME = "config.json"
+
+#: Штамп в папке наборов рядом с .exe: какой версией приложения она разложена.
+#: Нужен, чтобы отличить «копия от прошлой версии» от «копия уже актуальна» —
+#: см. `AppConfig.init_frozen_resources`.
+BUNDLE_STAMP_NAME = ".bundle-version"
 
 
 def app_root() -> Path:
@@ -42,6 +49,35 @@ def bundle_root() -> Path:
             return Path(meipass)
         return Path(sys.executable).resolve().parent
     return Path(__file__).resolve().parent.parent
+
+
+def read_bundle_stamp(directory: Path) -> str:
+    """Версия приложения, которой разложена копия наборов.
+
+    Пустая строка — штампа нет: так выглядят копии, сделанные сборками до
+    1.0.2, и они подлежат перезаливке.
+    """
+    try:
+        return (directory / BUNDLE_STAMP_NAME).read_text(encoding="utf-8").strip()
+    except OSError:
+        return ""
+
+
+def set_aside_bundle_copy(directory: Path, version: str) -> bool:
+    """Отложить прежнюю копию наборов рядом: `tests.backup-<версия>-<дата>`.
+
+    Не удаляем: в копии могут лежать наборы, правленные в редакторе. `False`
+    означает, что переименовать не удалось (папку держит кто-то ещё), и тогда
+    раскладывать поверх нельзя — получилась бы смесь двух версий.
+    """
+    backup = directory.with_name(
+        "%s.backup-%s-%s" % (directory.name, version or "unknown", time.strftime("%Y%m%d-%H%M%S"))
+    )
+    try:
+        directory.rename(backup)
+    except OSError:
+        return False
+    return True
 
 
 @dataclass
@@ -135,20 +171,39 @@ class AppConfig:
                 setattr(self, attr, str(default))
 
     def init_frozen_resources(self) -> None:
-        """В собранном приложении скопировать read-only наборы тестов из бандла
-        в папку рядом с .exe, чтобы редактор мог их править, а история и
-        результаты писались в переносимое место. Идемпотентно: копируем
-        только если целевой папки ещё нет.
+        """Разложить наборы тестов рядом с .exe и держать их в одной версии с
+        приложением.
+
+        Зачем копия вообще: в бандле наборы read-only, а редактор тестов правит
+        их на диске, и история с результатами должны писаться в переносимое
+        место. Поэтому первый запуск разворачивает копию рядом с `.exe`.
+
+        Почему по штампу версии: раньше копия делалась один раз («копируем,
+        если папки ещё нет») и после обновления приложения рядом оставались
+        наборы прошлой версии — новые в окне не появлялись, изменённые не
+        обновлялись, и стенд показывал не то, что лежит в сборке. Теперь в
+        копию пишется версия приложения, и при расхождении она раскладывается
+        заново, а прежняя откладывается в `tests.backup-<версия>-<дата>`:
+        правки, сделанные в редакторе, не пропадают.
         """
         if not getattr(sys, "frozen", False):
             return
         src = bundle_root() / "tests"
+        if not src.is_dir():
+            return
         dst = self.tests_path
-        if src.is_dir() and not dst.is_dir():
-            try:
-                shutil.copytree(src, dst)
-            except OSError:
-                pass
+
+        if dst.is_dir():
+            stamp = read_bundle_stamp(dst)
+            if stamp == __version__:
+                return
+            if not set_aside_bundle_copy(dst, stamp):
+                return
+        try:
+            shutil.copytree(src, dst)
+            write_text_atomic(dst / BUNDLE_STAMP_NAME, __version__)
+        except OSError:
+            pass
 
     @property
     def tests_path(self) -> Path:

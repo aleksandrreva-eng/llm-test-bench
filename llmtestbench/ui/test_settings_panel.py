@@ -54,6 +54,7 @@ TEST_TYPES: list[tuple[str, str]] = [
     ("instruction_following", "Инструкции (жёсткие)"),
     ("robustness", "Устойчивость"),
     ("code", "Код"),
+    ("russian", "Русский язык"),
 ]
 
 

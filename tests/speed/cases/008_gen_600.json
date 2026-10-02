@@ -1,0 +1,16 @@
+{
+  "id": "speed_gen_600",
+  "name": "Генерация: просьба 600 слов",
+  "generator": "lorem_by_tokens",
+  "target_tokens": 512,
+  "answer_words": 600,
+  "params": {
+    "max_tokens": 1536
+  },
+  "expected": {
+    "type": "word_count",
+    "min": 150
+  },
+  "tags": ["speed", "generation", "medium"],
+  "weight": 1.0
+}

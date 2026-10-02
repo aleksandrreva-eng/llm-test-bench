@@ -68,19 +68,24 @@ def print_run(run, verbose: bool = True) -> None:
     else:
         # Набор без критериев проверки (например speed). Здесь важен не вердикт,
         # а метрики — иначе строка «нет проверенных кейсов» выглядит как поломка.
-        ttft = [c.ttft_ms for c in run.cases if c.ttft_ms]
-        pre = [c.prompt_tokens_per_sec for c in run.cases if c.prompt_tokens_per_sec]
-        gen = [c.tokens_per_sec for c in run.cases if c.tokens_per_sec]
         print("Итог: набор без проверок — смотри метрики")
-        if ttft:
-            print(
-                "Средние метрики: TTFT %.0f мс, префилл %.0f t/s, генерация %.1f t/s"
-                % (
-                    sum(ttft) / len(ttft),
-                    (sum(pre) / len(pre)) if pre else 0.0,
-                    (sum(gen) / len(gen)) if gen else 0.0,
-                )
+    # Средние метрики печатаются всегда, когда они есть, а не только у набора
+    # без счёта. У набора `speed` часть кейсов проверяется (длина ответа), и
+    # счёт у него теперь появляется — но ходят в этот набор не за процентом,
+    # а за скоростями. Раньше строка стояла в ветке «без проверок» и пропадала
+    # ровно тогда, когда метрики нужнее всего.
+    ttft = [c.ttft_ms for c in run.cases if c.ttft_ms]
+    pre = [c.prompt_tokens_per_sec for c in run.cases if c.prompt_tokens_per_sec]
+    gen = [c.tokens_per_sec for c in run.cases if c.tokens_per_sec]
+    if ttft:
+        print(
+            "Средние метрики: TTFT %.0f мс, префилл %.0f t/s, генерация %.1f t/s"
+            % (
+                sum(ttft) / len(ttft),
+                (sum(pre) / len(pre)) if pre else 0.0,
+                (sum(gen) / len(gen)) if gen else 0.0,
             )
+        )
     print("Время: %.1f с" % run.seconds)
     if run.status != "finished":
         print("Статус: %s" % run.status)

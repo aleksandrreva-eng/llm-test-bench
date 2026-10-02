@@ -1,0 +1,23 @@
+{
+  "id": "russian_012",
+  "name": "Паронимы «одеть» и «надеть»",
+  "prompt": "Объясни разницу между словами «одеть» и «надеть» одним предложением.",
+  "expected": {
+    "type": "all_of",
+    "checks": [
+      {
+        "type": "contains_all",
+        "values": ["одеть", "надеть"]
+      },
+      {
+        "type": "contains_any",
+        "values": ["на себя", "кого-то", "кого-либо", "другого", "на кого-то"]
+      }
+    ]
+  },
+  "params": {
+    "max_tokens": 256
+  },
+  "tags": ["russian", "semantics"],
+  "weight": 1.0
+}

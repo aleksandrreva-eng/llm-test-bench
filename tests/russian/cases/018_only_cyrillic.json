@@ -1,0 +1,23 @@
+{
+  "id": "russian_018",
+  "name": "Ответ только кириллицей",
+  "prompt": "Напиши три русские пословицы о труде — каждая с новой строки. Только кириллица: без латинских букв и цифр.",
+  "expected": {
+    "type": "all_of",
+    "checks": [
+      {
+        "type": "regex",
+        "pattern": "^[^A-Za-z]*$"
+      },
+      {
+        "type": "word_count",
+        "min": 9
+      }
+    ]
+  },
+  "params": {
+    "max_tokens": 320
+  },
+  "tags": ["russian", "format"],
+  "weight": 1.5
+}
