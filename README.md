@@ -82,7 +82,7 @@ Three things stand out:
 
 *Honest about the setup: Qwen3.8 ran with a 49152 context, the rest with 32768;
 Qwen3.6 is IQ3_XXS while Qwen3.8 is IQ3_S, so part of that gap may come from the
-quant type. The VRAM block is empty because the server was not started by the app.*
+quant type. The VRAM block is empty because the server was not started by the app. Speed figures are a single measurement per model, not an average: a second run of gemma-4-26B scored the same 101/112 but 121 t/s generation instead of 96 — the score repeats, the speed wobbles.*
 
 ## Download
 
