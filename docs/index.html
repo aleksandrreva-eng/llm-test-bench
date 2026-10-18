@@ -480,6 +480,7 @@
             <th data-ru="Генерация" data-en="Generation">Генерация</th>
             <th data-ru="Префилл" data-en="Prefill">Префилл</th>
             <th>TTFT</th>
+            <th>VRAM</th>
           </tr>
         </thead>
         <tbody>
@@ -490,6 +491,7 @@
             <td>57.5 t/s</td>
             <td>692 t/s</td>
             <td>1104 ms</td>
+            <td>—</td>
           </tr>
           <tr>
             <td>gemma-4-26B-A4B · UD-Q4_K_XL</td>
@@ -498,6 +500,7 @@
             <td><b>96.0 t/s</b> ★</td>
             <td><b>2524 t/s</b> ★</td>
             <td><b>323 ms</b> ★</td>
+            <td><b>13 885 MiB</b></td>
           </tr>
           <tr>
             <td>Ornith-1.5-35B · Q4_K_M</td>
@@ -506,6 +509,7 @@
             <td>62.1 t/s</td>
             <td>454 t/s</td>
             <td>1263 ms</td>
+            <td>—</td>
           </tr>
           <tr>
             <td>gemma-4-12B · QAT Q4_0</td>
@@ -514,6 +518,7 @@
             <td>54.2 t/s</td>
             <td>1923 t/s</td>
             <td>412 ms</td>
+            <td>—</td>
           </tr>
           <tr>
             <td>Qwen3.6-27B · IQ3_XXS</td>
@@ -522,6 +527,7 @@
             <td>32.5 t/s</td>
             <td>748 t/s</td>
             <td>951 ms</td>
+            <td>—</td>
           </tr>
         </tbody>
       </table>
@@ -546,8 +552,8 @@
     </div>
 
     <p class="hint" style="margin-top:16px"
-       data-ru="Честно про условия: Qwen3.8 гонялся с контекстом 49152, остальные — 32768. Qwen3.6 взят в IQ3_XXS, Qwen3.8 — в IQ3_S: типы квантов разные, часть разницы может быть из-за этого. Цифры скорости — один замер на модель, а не среднее: повторный прогон gemma-4-26B дал тот же счёт 101/112, но 121 t/s генерации вместо 96 — счёт повторяется, скорость гуляет. Блок «Память» пуст — сервер поднимался не приложением, VRAM не замерен. Сырые прогоны лежат в папке results."
-       data-en="Honest about the setup: Qwen3.8 ran with a 49152 context, the rest with 32768. Qwen3.6 is IQ3_XXS while Qwen3.8 is IQ3_S — different quant types, so part of the gap may come from that. Speed figures are a single measurement per model, not an average: a second run of gemma-4-26B scored the same 101/112 but 121 t/s generation instead of 96 — the score repeats, the speed wobbles. The memory block is empty: the server was not started by the app, so VRAM was not measured. Raw runs are in the results folder.">Честно про условия: Qwen3.8 гонялся с контекстом 49152, остальные — 32768. Qwen3.6 взят в IQ3_XXS, Qwen3.8 — в IQ3_S: типы квантов разные, часть разницы может быть из-за этого. Блок «Память» пуст — сервер поднимался не приложением, VRAM не замерен. Сырые прогоны лежат в папке results.</p>
+       data-ru="Честно про условия: Qwen3.8 гонялся с контекстом 49152, остальные — 32768. Qwen3.6 взят в IQ3_XXS, Qwen3.8 — в IQ3_S: типы квантов разные, часть разницы может быть из-за этого. Цифры скорости — один замер на модель, а не среднее: повторный прогон gemma-4-26B дал тот же счёт 101/112, но 121 t/s генерации вместо 96 — счёт повторяется, скорость гуляет. VRAM замерен только у gemma-4-26B-A4B: тот прогон шёл на сервере, поднятом приложением, и лог загрузки даёт 13 885 МиБ на видеокарте, 454 МиБ host-буферов и ноль mmap. Остальные четыре модели гонялись против поднятых извне серверов — лога загрузки нет, поэтому прочерк. Сырые прогоны лежат в папке results."
+       data-en="Honest about the setup: Qwen3.8 ran with a 49152 context, the rest with 32768. Qwen3.6 is IQ3_XXS while Qwen3.8 is IQ3_S — different quant types, so part of the gap may come from that. Speed figures are a single measurement per model, not an average: a second run of gemma-4-26B scored the same 101/112 but 121 t/s generation instead of 96 — the score repeats, the speed wobbles. VRAM is measured only for gemma-4-26B-A4B: that run went through a server the app started itself, and the load log reports 13 885 MiB on the GPU, 454 MiB of host buffers and zero mmap. The other four ran against externally started servers, so there is no load log and the cell stays empty. Raw runs are in the results folder.">Честно про условия: Qwen3.8 гонялся с контекстом 49152, остальные — 32768. Qwen3.6 взят в IQ3_XXS, Qwen3.8 — в IQ3_S: типы квантов разные, часть разницы может быть из-за этого. VRAM замерен только у gemma-4-26B-A4B — на сервере, поднятом приложением. Сырые прогоны лежат в папке results.</p>
   </div>
 </section>
 

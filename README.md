@@ -63,13 +63,13 @@ return "skipped", not "failed".
 RTX 5060 Ti 16 GB, 12 suites, 120 cases, context 32768. 112 cases counted — six
 speed cases have no pass criteria, part of the long-context cases do not fit into 32k.
 
-| Model | Size | Score | Generation | Prefill |
-|---|---:|---:|---:|---:|
-| Qwen3.8-27B · IQ3_S | 11.3 GB | **102/112 · 91.1%** | 57.5 t/s | 692 t/s |
-| gemma-4-26B-A4B · UD-Q4_K_XL | 13.3 GB | 101/112 · 90.2% | **96.0 t/s** | **2524 t/s** |
-| Ornith-1.5-35B · Q4_K_M | 20.2 GB | 97/112 · 86.6% | 62.1 t/s | 454 t/s |
-| gemma-4-12B · QAT Q4_0 | 6.5 GB | 93/112 · 83.0% | 54.2 t/s | 1923 t/s |
-| Qwen3.6-27B · IQ3_XXS | 11.4 GB | 93/112 · 83.0% | 32.5 t/s | 748 t/s |
+| Model | Size | Score | Generation | Prefill | VRAM |
+|---|---:|---:|---:|---:|---:|
+| Qwen3.8-27B · IQ3_S | 11.3 GB | **102/112 · 91.1%** | 57.5 t/s | 692 t/s | — |
+| gemma-4-26B-A4B · UD-Q4_K_XL | 13.3 GB | 101/112 · 90.2% | **96.0 t/s** | **2524 t/s** | **13 885 MiB** |
+| Ornith-1.5-35B · Q4_K_M | 20.2 GB | 97/112 · 86.6% | 62.1 t/s | 454 t/s | — |
+| gemma-4-12B · QAT Q4_0 | 6.5 GB | 93/112 · 83.0% | 54.2 t/s | 1923 t/s | — |
+| Qwen3.6-27B · IQ3_XXS | 11.4 GB | 93/112 · 83.0% | 32.5 t/s | 748 t/s | — |
 
 Three things stand out:
 
@@ -82,7 +82,7 @@ Three things stand out:
 
 *Honest about the setup: Qwen3.8 ran with a 49152 context, the rest with 32768;
 Qwen3.6 is IQ3_XXS while Qwen3.8 is IQ3_S, so part of that gap may come from the
-quant type. The VRAM block is empty because the server was not started by the app. Speed figures are a single measurement per model, not an average: a second run of gemma-4-26B scored the same 101/112 but 121 t/s generation instead of 96 — the score repeats, the speed wobbles.*
+quant type. Speed figures are a single measurement per model, not an average: a second run of gemma-4-26B scored the same 101/112 but 121 t/s generation instead of 96 — the score repeats, the speed wobbles. VRAM is measured only for gemma-4-26B-A4B: that run went through a server the app started itself, and the load log reports 13 885 MiB on the GPU (13 574 weights + 84 KV cache + 226 compute), 454 MiB of host buffers, zero mmap, all 31 layers on the card — `nvidia-smi` agrees once the CUDA context overhead is counted. The other four were benchmarked against externally started servers, so the app had no load log for them and the cell stays empty.*
 
 ## Download
 
