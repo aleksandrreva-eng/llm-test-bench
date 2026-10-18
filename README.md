@@ -58,6 +58,32 @@ Checks are defined in `llmtestbench/checks.py`: `contains_any`, `contains_all`,
 `all_of`, `word_count`, `set_equal`. Deferred checks (`llm_judge`, `embedding`)
 return "skipped", not "failed".
 
+## Results on one GPU
+
+RTX 5060 Ti 16 GB, 12 suites, 120 cases, context 32768. 112 cases counted — six
+speed cases have no pass criteria, part of the long-context cases do not fit into 32k.
+
+| Model | Size | Score | Generation | Prefill |
+|---|---:|---:|---:|---:|
+| Qwen3.8-27B · IQ3_S | 11.3 GB | **102/112 · 91.1%** | 57.5 t/s | 692 t/s |
+| gemma-4-26B-A4B · UD-Q4_K_XL | 13.3 GB | 101/112 · 90.2% | **96.0 t/s** | **2524 t/s** |
+| Ornith-1.5-35B · Q4_K_M | 20.2 GB | 97/112 · 86.6% | 62.1 t/s | 454 t/s |
+| gemma-4-12B · QAT Q4_0 | 6.5 GB | 93/112 · 83.0% | 54.2 t/s | 1923 t/s |
+| Qwen3.6-27B · IQ3_XXS | 11.4 GB | 93/112 · 83.0% | 32.5 t/s | 748 t/s |
+
+Three things stand out:
+
+- **12B matched 27B.** gemma-4-12B (6.5 GB) and Qwen3.6-27B (11.4 GB) both scored
+  93 out of 112. Five extra gigabytes bought nothing.
+- **35B lost to 27B.** Ornith-1.5-35B in Q4 takes 20.2 GB and scores below both
+  26–27B models, with prefill five times slower.
+- **The version decides.** On reasoning Qwen3.6 takes 50%, Qwen3.8 takes 100% —
+  same eight cases, same model family.
+
+*Honest about the setup: Qwen3.8 ran with a 49152 context, the rest with 32768;
+Qwen3.6 is IQ3_XXS while Qwen3.8 is IQ3_S, so part of that gap may come from the
+quant type. The VRAM block is empty because the server was not started by the app.*
+
 ## Download
 
 Windows 10/11. Free, MIT, no sign-up.
