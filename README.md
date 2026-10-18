@@ -1,457 +1,134 @@
 # LLM Test Bench
 
-Стенд для тестирования локальных GGUF-моделей на `llama.cpp`. Тестирует
-модель в режимах чата и агента, сохраняет результаты в JSON и SQLite,
-собирает HTML-отчёт и показывает сравнение прогонов.
+**Numbers, not vibes.** A test bench for local GGUF models on `llama.cpp`:
+12 suites, 120 cases, prefill and generation speed, VRAM usage — all in one report.
 
-Приложение работает через внешний `llama-server` по HTTP на
-`127.0.0.1:8080` — поднимает и останавливает его может и приложение
-(если это свой процесс), и сторонний лаунчер. Прямой режим
-(`llama-cpp-python`) отложен: под `GPU sm_120 / CUDA 13.3` готовых колёс
-нет.
+[English](README.md) · [Русский](README.ru.md)
 
-## Требования
+![version](https://img.shields.io/badge/version-1.0.3-4dd4ac)
+![license](https://img.shields.io/badge/license-MIT-blue)
+![platform](https://img.shields.io/badge/platform-Windows%2010%2F11-lightgrey)
 
-- Windows 10/11
-- Python **3.13** (устанавливать нужно именно 3.13 — под 3.14 PySide6
-  может не иметь колёс)
+![Testing screen](docs/screenshots/testing.png)
 
-## Быстрый старт
+## What it is
+
+You pick a model by feel: five questions in a chat window, "seems smart", done.
+A week later it falls apart on four-step arithmetic — and you no longer remember
+what the previous model answered to the same question.
+
+This is a bench that turns that into numbers. It runs a fixed set of test cases
+against the model you already have running, checks the answers automatically,
+and keeps every run so you can compare models case by case.
+
+- **Rule-based checks.** A judge model is called only where there is no way
+  around it, so results do not depend on luck.
+- **Quality and speed together.** Prefill and generation tok/s, TTFT, latency and
+  VRAM sit in the same table as accuracy per suite.
+- **Every failure in full.** Not "7 out of 10" but "here are the three cases that
+  broke, here is the prompt, here is the answer, here is the check".
+
+## How it works
+
+The bench starts no server and loads nothing. Your launcher loads the model —
+`llama.cpp`, LM Studio, your own script — and the bench tests whatever already
+answers on `http://127.0.0.1:8080`. It does not touch your config.
+
+## What's inside
+
+12 suites, 120 cases. Each suite is a separate run, so you can pick one or run all.
+
+| Suite | Cases | What it checks |
+|---|---:|---|
+| `chat_single` | 20 | single-turn questions: facts, format, JSON extraction, exact multiplication, an honest "no such thing" |
+| `chat_multi` | 6 | context retention, memory through distractor questions, pressure toward a wrong answer, a rule from the first turn |
+| `reasoning` | 8 | multi-step chains, order derived from constraints, traps with extra data, a task with no single answer |
+| `instruction_following` | 8 | several constraints at once: length, format, order, prohibitions. Every condition is checked (`all_of`) |
+| `robustness` | 6 | instruction hidden inside data, sycophancy, a non-existent method, incomplete and contradictory tasks, refusal |
+| `code` | 5 | reading someone else's code: crash cause, slice output, complexity, a broken regex, a function from its description |
+| `agent_tools` | 10 | choosing a tool and its arguments, two calls in one answer, an enum argument, and when *not* to call a tool |
+| `function_calling` | 10 | JSON Schema validity: nested object, array, enum, optional argument, negation |
+| `quality` | 8 | reference answers by key facts (judge stage) |
+| `context_long` | 10 | needle in a haystack from 2K to 128K, two similar code blocks where only one is right, code at the edges, no code at all |
+| `speed` | 9 | prefill from 100 to 32 000 tokens and long generation: tok/s, prefill tok/s, TTFT, total time |
+| `russian` | 20 | Russian spelling by rules, morphology (cases, numerals, gender, stress), meaning and idioms, translation both ways, format discipline |
+
+Checks are defined in `llmtestbench/checks.py`: `contains_any`, `contains_all`,
+`not_contains`, `regex`, `exact_match`, `json_schema`, `tool_call`, `no_tool_call`,
+`all_of`, `word_count`, `set_equal`. Deferred checks (`llm_judge`, `embedding`)
+return "skipped", not "failed".
+
+## Download
+
+Windows 10/11. Free, MIT, no sign-up.
+
+| | |
+|---|---|
+| **Installer** (MSI, 60 MB) | [LLMTestBench-1.0.3.msi](https://github.com/aleksandrreva-eng/llm-test-bench/releases/download/v1.0.3/LLMTestBench-1.0.3.msi) |
+| **Portable** (single `.exe`) | [LLMTestBench.exe](https://github.com/aleksandrreva-eng/llm-test-bench/releases/download/v1.0.3/LLMTestBench.exe) |
+| **User manual** (PDF, Russian) | [LLMTestBench-1.0.3-manual-ru.pdf](https://github.com/aleksandrreva-eng/llm-test-bench/releases/download/v1.0.3/LLMTestBench-1.0.3-manual-ru.pdf) |
+| **All releases** | [releases](https://github.com/aleksandrreva-eng/llm-test-bench/releases) |
+
+Python is **not** required for the installer or the portable build.
+
+## Run from source
+
+Python **3.13** (not 3.14 — PySide6 may have no wheels for it).
 
 ```bat
-# 1. Виртуальное окружение
 py -3.13 -m venv .venv
 .venv\Scripts\python.exe -m pip install -r requirements.txt
 
-# 2. Проверить без графики (сканирование моделей + команда запуска)
+:: check without the GUI: scan models and build the launch command
 .venv\Scripts\python.exe main.py --selfcheck "F:\Models"
 
-# 3. Запустить GUI (двойной клик по Запустить.bat)
+:: start the GUI
 Запустить.bat
 ```
 
-`Запустить.bat` проверяет, что `.venv` создан, и показывает ошибки, если
-что-то пошло не так.
-
-Для правки кода и сборки `.exe` нужен ещё `requirements-dev.txt` (ruff,
-pre-commit, PyInstaller):
+Run a suite from the console against an already running server:
 
 ```bat
-.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
-.venv\Scripts\python.exe -m pre_commit install
+Прогнать-тесты.bat chat_single --report
+Прогнать-тесты.bat speed,chat_multi --runs 2 --report
+Прогнать-тесты.bat chat_single --dry-run
 ```
 
-## Логи
+## What you get
 
-Приложение пишет свой лог в `logs/app.log` рядом с собой (в сборке — рядом
-с `.exe`): время, уровень, модуль, сообщение. Файл ротируется по 2 МБ,
-хранится 5 копий. Туда попадает то, чего не видно в интерфейсе: неудачная
-запись в SQLite, неразобранный лог загрузки модели, ошибка экспорта.
+- **History** — one row per run, not per file. Expand it to see the cases, open a
+  case card to see the prompt, the answer, the reasoning and the check breakdown.
+- **Comparison** — runs as columns, metrics as rows, the best value marked. Expand
+  a row to see which suite made the difference; double-click to compare case by
+  case. A warning appears if the suite versions differ.
+- **Reports** — HTML report per run, dark and light themes, CSV export.
+- **Memory** — VRAM, RAM and mmap taken from the `llama-server` load log, not
+  guessed. If the log has no data, the report says "no data" instead of zeros.
 
-Это отдельный файл от `logs/server.log` — тот пишет `llama-server` про своё
-загруженное состояние, и разбирает его `server_log.py` для блока «Память».
+## Why another benchmark?
 
-Уровень задаётся в `config.json` (`log_level`: `debug`, `info`, `warning`,
-`error`). При запуске из консоли лог дублируется в `stderr`; в сборке без
-консоли — только файл.
+`lm-evaluation-harness` answers "how smart is this model in general", on academic
+datasets. `llama-bench` measures speed and knows nothing about quality. Promptfoo
+tests prompts inside an application and lives in CI.
 
-Все данные приложение пишет **атомарно** (временный файл рядом + `os.replace`):
-обрыв прогона, закрытие окна или нехватка места не оставят обрезанный JSON.
-Подробности — `llmtestbench/atomic_io.py`.
+This one answers a different question: **how does this particular quant behave on
+your GPU, right now, on the tasks you care about** — and keeps the answer.
 
-## Использование в GUI
+## Requirements
 
-Подробное руководство со скриншотами к каждой функции — `docs/Руководство-пользователя.md`
-(и собранный из него PDF рядом). Ниже — короткая версия.
+- Windows 10/11
+- a running `llama-server` on `127.0.0.1:8080` (the app can also start one itself)
+- for the memory block: the server started with `-v`, so the load log has the layer
+  layout
 
-Разделы переключаются рельсом слева (сворачивается кнопкой «Свернуть панель»
-или `Ctrl+B`, состояние помнится в конфиге):
+## Links
 
-- **Тестирование** — три колонки: модели · наборы · параметры прогона, под
-  ними полоса прогона.
-  - Строка набора несёт счёт **последнего прогона выбранной модели**
-    (`13/15`, `метрики`, `не гонялся`) — идти за этим в «Историю» не нужно.
-  - Наборы отмечаются флажками (каждый набор — отдельный прогон, поэтому
-    «Все» прогоняет все наборы подряд). Прогон идёт **только** по флажкам;
-    выпадашка «Набор для редактора» выбирает набор для кнопки «Редактор».
-  - Лимит кейсов применяется к каждому набору отдельно.
-  - Поля «Запас токенов на рассуждение» и «Таймаут запроса» попадают в прогон.
-  - Кнопки «Запустить прогон» / «Стоп». Журнал прогона — компактная полоса на
-    пять строк, целиком прячется кнопкой «Журнал» (состояние помнится).
-- **Сервер** — состояние, путь к `llama-server.exe`, адрес, команда запуска и
-  полный лог процесса (ротация 10 МБ, цветовая маркировка уровней).
-- **История** — прогоны из `results/*.json`. **Строка таблицы — прогон целиком,
-  а не файл**: одно нажатие «Запустить» пишет столько файлов, сколько отмечено
-  наборов, и они собираются в одну строку по `batch_id` (у старых файлов, где
-  `batch_id` нет, — по времени старта, такая строка помечена «≈»).
-  - Строка разворачивается на кейсы прямо в таблице (клик по треугольнику
-    слева); показываются первые 15 кейсов, остаток — строкой «ещё N» со
-    ссылкой на отчёт. Двойной клик по кейсу открывает его карточку в окне:
-    задание, ответ, рассуждение модели, разбор проверки, метрики.
-  - Двойной клик по строке прогона — HTML-отчёт по всем его наборам сразу.
-  - Фильтры применяются сразу (без кнопки «Применить»), сортировка по столбцу,
-    счёт с полоской, пагинация по 10 прогонов, массовые действия появляются
-    только при выделении.
-- **Сравнение** — сводная таблица и графики. **Столбец таблицы — прогон целиком,
-  а не набор**: файлы собираются в прогоны той же группировкой, что в истории,
-  поэтому два прогона по семи наборам дают две колонки, а не четырнадцать.
-  - Строки — метрики прогона: дата, модель, размер, контекст, наборы, кейсы,
-    качество, сбои стенда, пустые ответы, tokens/sec, latency, TTFT, время,
-    версии наборов, итоговый рейтинг. Лучшее значение в строке помечено «★»;
-    если значения совпали у всех, «лучшего» нет.
-  - Строку можно развернуть по наборам (клик по треугольнику): видно, какой
-    набор дал разницу, а у набора, которого в прогоне не было, стоит прочерк.
-  - Двойной клик по значению подстроки открывает покейсовое сравнение набора:
-    строки — кейсы, столбцы — прогоны, в ячейке вердикт. Двойной клик по
-    ячейке — карточка кейса.
-  - Если у сравниваемых прогонов разные версии одного набора, над таблицей
-    появляется предупреждение (п. 11.7 ТЗ) — сравнивать по нему некорректно.
-  - Графики: tokens/sec и latency по кейсам, по линии на прогон. Экспорт в
-    HTML и CSV, «только различия», «графики».
+- [Changelog](CHANGELOG.md)
+- [User manual (RU)](docs/USER_MANUAL.md)
+- Video: [Russian](https://youtu.be/0eJbCHqIhW0) · [English](https://youtu.be/Laa34Zas8gQ)
+- Reviews and standards: [REVIEW_STANDARDS.md](REVIEW_STANDARDS.md)
+- Support the project: [ЮMoney](https://yoomoney.ru/fundraise/1KJLC8PV82S.260929)
 
-Строка состояния внизу держит постоянный контекст: адрес сервера, выбранную
-модель и объём наборов с любого экрана. Слева от них — сообщение момента
-(состояние сервера, ход прогона, итог).
+## License
 
-## Прогон из консоли
-
-run_tests.py прогоняет набор против уже запущенного сервера:
-
-```bat
-Прогнать-тесты.bat chat_single
-Прогнать-тесты.bat chat_single --runs 2 --report
-Прогнать-тесты.bat speed,chat_multi --report
-Прогнать-тесты.bat chat_single --dry-run   # собрать промпты и выйти
-```
-
-Аргументы передаются `run_tests.py` прямо:
-
-- `--set <набор, через запятую или all>` — обязательный.
-- `--runs <N>` — сколько повторов каждого кейса (по умолчанию 1).
-- `--limit <N>` — взять только первые N кейсов каждого набора.
-- `--tags <basic,format>` — только кейсы с этими тегами.
-- `--report` — собрать HTML-отчёт сразу после прогона.
-- `--dry-run` — собрать промпты и посчитать токены, ничего не отправляя.
-- `--reasoning-allowance <N>` — запас токенов на рассуждение.
-- `--base-url <url>` — адрес сервера (по умолчанию из `config.json`).
-- `--timeout <сек>` — таймаут запроса (по умолчанию 900).
-- `--server-command "<команда>"` — чем поднят сервер, для записи в прогон (см.
-  «Чем поднят сервер»). Консоль сервером не управляет, поэтому команду берут
-  снаружи: `--server-command "--load-mode none -ot blk.0.ffn_down_exps.weight=CUDA_Host"`.
-
-Результаты каждого прогона пишутся в `results/<модель>_<набор>_<дата>.json`.
-Внутри есть `batch_id` — общий идентификатор всего запуска: по нему история
-собирает файлы одного нажатия «Запустить» в одну строку.
-
-## Чем поднят сервер
-
-Скорость решают не только модель и набор, но и флаги запуска: `--load-mode`,
-`-ot`, `--n-cpu-moe` меняют, где лежат веса, и разница в 25% на генерации —
-обычное дело. Поэтому каждый прогон пишет в `params.server`, чем был поднят
-сервер:
-
-```json
-"server": {
-  "applied": true,
-  "command": "llama-server.exe -m F:\\Models\\Ornith.gguf -ngl 99 --load-mode none",
-  "note": ""
-}
-```
-
-Три ключа, и все три — факты, а не догадки:
-
-| ключ | что значит |
-|------|------------|
-| `applied` | приложение ли подняло процесс этой командой |
-| `command` | команда запуска как есть; пустая строка — «неизвестна» |
-| `note` | почему пустая (пустая строка — если сказать нечего) |
-
-Ключ есть **всегда**, в том числе когда команда неизвестна: молчание читалось бы
-как «это не важно». Внешний сервер (лаунчер, консоль) приложение не поднимало, и
-его флагов оно не знает — тогда в записи стоит `applied: false` с причиной, а не
-текст из поля ввода, который к чужому процессу отношения не имеет. Назвать
-команду для консольного прогона можно флагом `--server-command`.
-
-## Наборы тестов
-
-12 наборов, 120 кейсов. Наборы версии 2.0.0 рассчитаны на модели класса 35B-A3B
-(Ornith 1.5 35B Q4_K_M): базовые наборы такие модели проходят почти без
-ошибок, поэтому добавлены кейсы, где расходится не знание, а дисциплина.
-Версии наборов не совпадают: `russian` — 1.0.0, `speed` — 3.0.0, остальные — 2.0.0.
-
-| набор | кейсов | что проверяет |
-|-------|--------|----------------|
-| `chat_single` | 20 | одиночные вопросы: факты, формат, извлечение данных в JSON, точное умножение, честное «такого не бывает» |
-| `chat_multi` | 6 | удержание контекста, память через отвлекающие вопросы, давление на неверный ответ, правило из первой реплики |
-| `reasoning` | 8 | многошаговые цепочки, вывод порядка из условий, ловушки с лишними данными, задача без единственного ответа |
-| `instruction_following` | 8 | несколько ограничений сразу: длина, формат, порядок, запреты. Проверяются все условия (`all_of`) |
-| `robustness` | 6 | инструкция внутри данных, сикофантство, несуществующий метод, неполное и противоречивое задание, отказ |
-| `code` | 5 | разбор чужого кода: причина падения, вывод среза, сложность, ошибка в регексе, функция по описанию |
-| `agent_tools` | 10 | выбор инструмента и аргументов, два вызова в одном ответе, enum-аргумент, когда инструмент вызывать НЕ надо |
-| `function_calling` | 10 | валидность вызова по JSON Schema: вложенный объект, массив, enum, необязательный аргумент, отрицание |
-| `quality` | 8 | эталонные ответы по ключевым фактам (судья — этап 8) |
-| `context_long` | 10 | иголка в стоге 2K…128K, два похожих кода (нужно взять нужный), код по краям текста, кода нет вовсе |
-| `speed` | 9 | префилл 100…32000 токенов и генерация длинного ответа: tokens/sec, префилл t/s, TTFT, общее время |
-| `russian` | 20 | русский язык: орфография по правилам (жи/ши, -тся/-ться, н/нн), морфология (падежи, числительные, род, ударение), понимание смысла и идиом, перевод в обе стороны, дисциплина формата (только кириллица, JSON с русскими ключами) |
-
-Теги кейсов позволяют прогнать только часть: `--tags hard` — самое сложное,
-`--tags reasoning`, `--tags json`, `--tags no-tool` и так далее.
-
-Типы проверок (`llmtestbench/checks.py`): `contains_any`, `contains_all`,
-`not_contains`, `regex`, `exact_match`, `json_schema`, `tool_call`,
-`no_tool_call`, `all_of`, `word_count`, `set_equal`, плюс отложенные
-`llm_judge` и `embedding` (возвращают «пропуск», а не провал).
-
-## Расход памяти модели
-
-В отчёте по прогону есть раздел «Память»: сколько заняла VRAM, сколько RAM, сколько
-осталось в файле на диске (mmap) и как легли слои по устройствам.
-
-Цифры берутся **только из stdout-лога загрузки llama-server** — по HTTP их не отдаёт
-ни `/props`, ни `/metrics`. Поэтому:
-
-- нужен сервер, поднятый самим приложением (при `use_existing_server: true` лог ведёт
-  лаунчер, и приложение его не видит);
-- нужен флаг `-v` в команде запуска. На `-lv 4` будут буферы, но не построчная
-  раскладка слоёв; без `-v` — ничего;
-- если данных нет, отчёт честно пишет «нет данных», а не показывает нули.
-
-Формат строк и правила разбора — `llmtestbench/server_log.py`, проверки —
-`check_memory_metrics.py` (55 проверок). Блок `memory` в JSON прогона описан в
-п. 4.8.1 ТЗ.
-
-## Сборка в .exe
-
-Собирается **one-file** приложение (один `.exe`) по `LLMTestBench.spec` через
-PyInstaller:
-
-```bat
-.venv\Scripts\python.exe build_app.py
-```
-
-Готовый файл — `dist/LLMTestBench.exe` (~57 МБ). Ресурсы (`tests`, `docs`)
-кладутся внутрь бандла и распаковываются в `sys._MEIPASS`; `config.json` и
-рабочие папки (`results`, `reports`, `logs`, `sessions`, `history.db`, `.cache`)
-создаются рядом с `.exe` и переживают перезапуск — приложение переносимое.
-
-Проверить сборку, не открывая окно:
-
-```bat
-dist\LLMTestBench.exe --selfcheck F:\Models   :: сканер и команда запуска, код возврата
-set QT_QPA_PLATFORM=offscreen && dist\LLMTestBench.exe   :: старт GUI без окна на экране
-```
-
-Печать сравнения (`PySide6.QtPrintSupport`) импортируется лениво, внутри
-`_print()`, поэтому модуль прописан в `hiddenimports` спеки: без этого кнопка
-«Печать» в собранном приложении падала бы с `ModuleNotFoundError`.
-
-## Установщик MSI
-
-Собирается из того же `dist/LLMTestBench.exe` — сначала `build_app.py`, потом:
-
-```bat
-.venv\Scripts\python.exe make_msi.py
-```
-
-Готовый файл — `dist/LLMTestBench-1.0.3.msi` (~57 МБ). Версия берётся из
-`llmtestbench/__init__.py`, текст лицензии — из `LICENSE`: скрипт перекладывает
-его в `installer/License.rtf`, и этот RTF в репозитории не хранится.
-
-Нужны WiX Toolset 4 и **два** расширения **той же версии**, что сам WiX (иначе
-сборка падает на разборе разметки мастера): `UI` — мастер установки, `Util` —
-чистка папки при удалении:
-
-```bat
-dotnet tool install --global wix
-wix extension add -g WixToolset.UI.wixext/4.0.6
-wix extension add -g WixToolset.Util.wixext/4.0.6
-```
-
-Ставится **в профиль пользователя** — `%LOCALAPPDATA%\Programs\LLMTestBench`,
-права администратора не нужны, ярлык кладётся в меню «Пуск». Так сделано
-намеренно: приложение пишет `config.json`, логи и результаты рядом с `.exe`
-(см. `app_root()` в `llmtestbench/config.py`), а в `Program Files` без прав
-администратора писать нельзя.
-
-При удалении пакет убирает папку приложения целиком — вместе с рабочими папками
-(`tests`, `logs`, `results`, `sessions`, `.cache`), которые создало само
-приложение. При обновлении поверх старой версии они **не трогаются**. Удалять
-надо при закрытом приложении — иначе MSI не сможет удалить `logs\app.log`.
-Устройство пакета, причина такого разделения и то, что проверено на собранном
-MSI, описаны в шапке `installer/LLMTestBench.wxs`.
-
-## Структура
-
-```
-main.py               точка входа (GUI) и --selfcheck
-run_tests.py          CLI-прогон наборов
-build_app.py          сборка PyInstaller
-make_msi.py           сборка MSI через WiX (см. «Установщик MSI»)
-installer/            разметка WiX: LLMTestBench.wxs (+ License.rtf при сборке)
-build_haystack.py     сборка «стога» для context_long
-check_*.py            проверочные скрипты (см. раздел «Проверки»)
-config.json           настройки (раздел 7 ТЗ)
-requirements.txt      зависимости рантайма (точные версии)
-requirements-dev.txt  ruff, pre-commit, PyInstaller — для правки и сборки
-llmtestbench/         исходный код
-  config.py           AppConfig: загрузка/сохранение, пути
-  atomic_io.py        запись файлов через временный файл + os.replace
-  logging_setup.py    логи в logs/app.log с ротацией
-  gguf_scanner.py     сканирование и разбор GGUF
-  server_cmd.py       команда запуска и разбор строки
-  server_manager.py   процесс сервера: старт, health-check, стоп, лог
-  server_log.py       разбор лога загрузки: память модели и раскладка слоёв
-  checks.py           типы проверок ответов
-  testsets.py         загрузка наборов, фильтр по тегам, лимит
-  generators.py       сборка промптов заданной длины
-  local_agent.py      локальная модель как субагент
-  runner.py           исполнитель кейсов
-  report.py           HTML-отчёт
-  database.py         SQLite-история
-  results_index.py    индекс и группировка прогонов по JSON из results/
-  ui/                 интерфейс на PySide6
-    theme.py          токены и стили: тёмная и светлая темы, сборка таблицы стилей
-    icons.py          иконки, нарисованные кодом
-    card.py           карточка, метки, плитки метрик, пустое состояние
-    nav_rail.py       рельс разделов
-    main_window.py    окно, страницы, полоса прогона
-    models_panel.py   список моделей
-    test_settings_panel.py  наборы и параметры прогона
-    server_panel.py   сервер: путь, адрес, команда
-    server_tab.py     журнал сервера
-    history_tab.py    история: прогон строкой, разворот на кейсы
-    case_card_dialog.py  карточка кейса в окне
-    compare_tab.py    сравнение: прогон столбцом, разворот на наборы
-    set_compare_dialog.py  кейсы одного набора по прогонам
-tests/                наборов тестов и кейсы
-docs/                 руководство пользователя (md + pdf) и скриншоты окна
-results/ reports/ logs/  рабочие папки
-sessions/             журнал сессий субагента
-agent_tasks/          формулировки задач для субагента
-.github/workflows/    CI: линтер, формат, автономные проверки
-```
-
-## Конфигурация
-
-Все настройки — в `config.json`, лежит рядом с приложением. Ключи:
-
-| поле | по умолчанию | что делает |
-|------|--------------|------------|
-| `models_dir` | `F:\Models` | папка с `.gguf`-моделями |
-| `llama_server_path` | — | путь к `llama-server.exe` |
-| `tests_dir` / `results_dir` / `reports_dir` / `logs_dir` / `sessions_dir` | рядом с приложением | рабочие папки |
-| `server_host` / `server_port` | `127.0.0.1` / `8080` | адрес сервера |
-| `use_existing_server` | `true` | проверять внешний сервер, а не поднимать свой (в коде дефолт — `false`) |
-| `auto_stop_server` | `true` | останавливать свой процесс при закрытии |
-| `server_pid` | `0` | PID своего процесса — по нему убивается осиротевший |
-| `health_check_timeout_sec` | `60` | таймаут health-check при старте |
-| `default_runs` | `1` | прогоны по умолчанию |
-| `default_test_types` | все типы | выбранные типы тестов |
-| `default_test_set` | `chat_single` | набор по умолчанию |
-| `last_case_limit` | `0` | лимит кейсов (`0` — все) |
-| `reasoning_allowance` | `2048` | запас токенов на рассуждение сверх бюджета ответа |
-| `request_timeout_sec` | `900` | таймаут запроса на кейс |
-| `cache_dir` | пусто → `.cache` рядом | где держать кэши (метаданные GGUF, вердикты судьи) |
-| `warmup` | `true` | прогревать сервер одним запросом перед прогоном |
-| `judge_cache` | `true` | кэшировать вердикты судьи |
-| `agent_token_cap` / `agent_temperature` / `agent_max_tokens` | `100000` / `0.3` / `8192` | бюджет и сэмплирование локального субагента |
-| `recursive_scan` | `true` | рекурсивно сканировать папку моделей |
-| `log_level` | `info` | `debug`, `info`, `warning`, `error` |
-| `ui_theme` | `dark` | тема интерфейса: `dark`, `light` или `auto` |
-| `ui_rail_collapsed` | `false` | свёрнут ли рельс разделов |
-| `ui_run_log_open` | `true` | развёрнут ли журнал прогона |
-| `window_geometry` | — | размер и положение окна |
-| `history_db_name` | `history.db` | имя файла базы истории |
-
-Тема переключается на лету: меню **Вид → Тема**. «Авто» следует за темой системы.
-Тёмная палитра снята с утверждённого макета и не меняется; светлая собрана из тех
-же ролей (макета для неё нет). Снимки обеих тем — `docs/Предпросмотр-*.png` и
-`docs/Предпросмотр-*-светлая.png`.
-
-## Проверки
-
-```bat
-.venv\Scripts\python.exe check_all.py             # все проверки одной сводкой
-.venv\Scripts\python.exe check_ui_server.py       # UI + сервер
-.venv\Scripts\python.exe check_history_tree.py     # история: прогон строкой
-.venv\Scripts\python.exe check_compare.py          # сравнение: прогон столбцом
-.venv\Scripts\python.exe check_speed_metrics.py    # метрики скорости: получение и показ
-.venv\Scripts\python.exe check_memory_metrics.py   # память модели: разбор лога загрузки
-.venv\Scripts\python.exe check_testsets.py         # наборы и типы проверок
-.venv\Scripts\python.exe check_generators.py       # генераторы промптов
-.venv\Scripts\python.exe check_set_selection.py    # прогон идёт по флажкам наборов
-.venv\Scripts\python.exe check_server_manager.py   # управление процессом
-.venv\Scripts\python.exe check_infra.py            # атомарная запись и логирование
-.venv\Scripts\python.exe check_database.py         # обёртка SQLite: запись, чтение, откат
-.venv\Scripts\python.exe check_imports.py          # неиспользуемые импорты
-.venv\Scripts\python.exe check_review.py --staged  # правила ревью по новым строкам
-.venv\Scripts\python.exe make_screenshots.py       # снимки окна в docs/
-.venv\Scripts\python.exe make_screenshots.py --manual  # снимки руководства в docs/manual/
-.venv\Scripts\python.exe make_manual_pdf.py        # PDF руководства из Markdown
-```
-
-Один вход на всё — `check_all.py`: тринадцать проверок плюс `ruff check` и
-`ruff format --check`, одна сводка в конце. `--fast` пропускает GUI-блок,
-`--list` показывает состав, можно назвать конкретные скрипты. В CI
-(`.github/workflows/ci.yml`) гоняется тот же `check_all.py` — один список
-вместо двух разошедшихся.
-
-Живой `llama-server` на `127.0.0.1:8080` не нужен ни одной проверке:
-`check_ui_server` и `check_server_manager` пропускают блок «живой сервер» и
-пишут об этом в выводе (счёт в таком прогоне меньше), а `check_set_selection`
-и `check_speed_metrics` поднимают собственный сервер на свободном порту.
-
-## Код-ревью
-
-Стандарт и процесс — `REVIEW_STANDARDS.md`, короткий проход — `ЧЕК-ЛИСТ-ревью.md`,
-вердикты — `ЖУРНАЛ-ревью.md`.
-
-Проверки ставятся на каждый commit (`.pre-commit-config.yaml`, четыре hook-а):
-
-```bat
-.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
-.venv\Scripts\python.exe -m pre_commit install
-.venv\Scripts\python.exe -m pre_commit run --all-files
-```
-
-`check_review.py` закрывает то, что не ловит ruff: глухой `except` (R1),
-нечитаемая переменная исключения (R2), магические числа (R3), новый модуль без
-проверки (R4), `%`-форматирование (R5), TODO без задачи (R6), забытая отладка (R7).
-Проверяются **только новые и изменённые строки** — старый долг заморожен и не
-мешает работать. Режимы: `--staged` (для hook-а), `--diff REV`, `--all` (аудит
-легаси), `--file PATH`. Отказ от правила на строке — комментарий `# noqa`.
-
-## Git
-
-Проект опубликован: **https://github.com/aleksandrreva-eng/llm-test-bench**.
-Пушить из этого репозитория нельзя — в истории есть личные материалы
-(`.workbuddy-ai/`, `docs/Отчёт-по-интерфейсу.html`). Публичная версия собирается
-**отдельным деревом**: скрипт `devtools/_publish_tmp.py` раскладывает её в папку
-вне проекта, и коммит делается уже оттуда. `config.json` в публикацию не едет,
-вместо него `config.example.json`.
-
-Рабочие папки (`dist`, `build`, `.venv`, `results`, `reports`,
-`logs`, `sessions`) и база истории `history.db` игнорируются через `.gitignore`:
-это данные, а не исходники — файл меняется при каждом прогоне и в репозитории
-создавал бы конфликты.
-
-```bat
-git status
-git add -A
-git commit -m "содержание"
-```
-
-Правки идут на ветке `review/<тема>` и вливаются в `master` после вердикта в
-`ЖУРНАЛ-ревью.md` (раздел 4 `REVIEW_STANDARDS.md`).
-
-## Лицензия
-
-MIT — текст в `LICENSE`. Коротко: можно брать, менять, встраивать в свои
-проекты и продавать, при условии что копирайт и текст лицензии остаются
-в копиях. Гарантий никаких — программа поставляется «как есть».
-
-## Поддержка
-
-Проект развивается в свободное время. Если он оказался полезен — можно поддержать разработку:
-
-[ЮMoney](https://yoomoney.ru/fundraise/1KJLC8PV82S.260929)
+MIT. Built by one person.
