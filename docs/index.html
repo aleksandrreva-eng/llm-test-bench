@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LLM Test Bench — числа вместо ощущений</title>
+<meta name="description" content="Стенд для локальных GGUF-моделей на llama.cpp: 12 наборов, 120 кейсов, скорость префилла и генерации, расход видеопамяти. Windows, бесплатно, MIT.">
+<meta property="og:title" content="LLM Test Bench — числа вместо ощущений">
+<meta property="og:description" content="12 наборов, 120 кейсов против твоей локальной модели. Скорость, качество, VRAM — в одном отчёте.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://aleksandrreva-eng.github.io/llm-test-bench/">
+<meta property="og:image" content="https://aleksandrreva-eng.github.io/llm-test-bench/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://aleksandrreva-eng.github.io/llm-test-bench/social-preview.png">
+<link rel="canonical" href="https://aleksandrreva-eng.github.io/llm-test-bench/">
+<style>
+  :root{
+    --bg:#0b0f14;
+    --panel:#111821;
+    --panel-2:#151e28;
+    --line:#1f2a35;
+    --line-2:#2a3846;
+    --text:#e6edf3;
+    --muted:#8b98a5;
+    --dim:#5f6c78;
+    --accent:#4dd4ac;
+    --accent-dim:#2f8f74;
+    --warn:#f0b429;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    --max:1080px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--bg);color:var(--text);
+    font:16px/1.65 var(--sans);
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:var(--max);margin:0 auto;padding:0 20px}
+  .mono{font-family:var(--mono)}
+
+  /* ---------- шапка ---------- */
+  header{
+    position:sticky;top:0;z-index:50;
+    background:rgba(11,15,20,.86);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav{display:flex;align-items:center;gap:18px;height:60px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;letter-spacing:-.01em;color:var(--text)}
+  .brand:hover{text-decoration:none}
+  .brand svg{display:block}
+  .nav-links{display:flex;gap:20px;margin-left:auto;font-size:14px}
+  .nav-links a{color:var(--muted)}
+  .nav-links a:hover{color:var(--text);text-decoration:none}
+  .lang{display:flex;gap:2px;border:1px solid var(--line-2);border-radius:8px;overflow:hidden}
+  .lang button{
+    background:transparent;border:0;color:var(--muted);font:600 12px/1 var(--sans);
+    padding:7px 9px;cursor:pointer;letter-spacing:.04em;
+  }
+  .lang button.on{background:var(--panel-2);color:var(--text)}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    border-radius:9px;padding:11px 18px;font-weight:600;font-size:15px;
+    border:1px solid transparent;cursor:pointer;transition:transform .06s ease, background .15s ease;
+    white-space:nowrap;
+  }
+  .btn:active{transform:translateY(1px)}
+  .btn-primary{background:var(--accent);color:#06231b;border-color:var(--accent)}
+  .btn-primary:hover{background:#5fe0b8;text-decoration:none}
+  .btn-ghost{background:transparent;color:var(--text);border-color:var(--line-2)}
+  .btn-ghost:hover{background:var(--panel-2);text-decoration:none}
+  .btn-sm{padding:8px 14px;font-size:14px}
+
+  /* ---------- hero ---------- */
+  .hero{padding:64px 0 40px;border-bottom:1px solid var(--line)}
+  .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:44px;align-items:center}
+  h1{
+    font-size:clamp(34px,5vw,54px);line-height:1.08;letter-spacing:-.025em;
+    margin:0 0 18px;font-weight:700;
+  }
+  h1 em{font-style:normal;color:var(--accent)}
+  .lead{font-size:18px;color:#c3ced9;margin:0 0 26px;max-width:34em}
+  .cta-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+  .facts{
+    display:flex;gap:8px;flex-wrap:wrap;font:12px/1 var(--mono);color:var(--muted);
+  }
+  .facts span{
+    border:1px solid var(--line);border-radius:6px;padding:6px 8px;background:var(--panel);
+  }
+
+  /* ---------- скриншот с заглушкой ---------- */
+  .shot{
+    border:1px solid var(--line-2);border-radius:12px;overflow:hidden;
+    background:var(--panel);box-shadow:0 20px 50px -20px rgba(0,0,0,.8);
+  }
+  .shot-bar{
+    display:flex;align-items:center;gap:6px;padding:9px 12px;
+    border-bottom:1px solid var(--line);background:var(--panel-2);
+  }
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--line-2)}
+  .shot-bar .t{margin-left:8px;font:11px var(--mono);color:var(--dim)}
+  .shot img{display:block;width:100%;height:auto}
+  .shot-fallback{
+    padding:26px 20px;text-align:center;color:var(--dim);font-size:13px;
+    background:
+      radial-gradient(circle at 30% 20%, rgba(77,212,172,.07), transparent 60%),
+      repeating-linear-gradient(0deg,transparent 0 23px,rgba(255,255,255,.025) 23px 24px);
+    min-height:220px;display:flex;flex-direction:column;justify-content:center;gap:8px;
+  }
+  .shot-fallback b{color:var(--muted);font-weight:600}
+
+  /* ---------- полоса «не трогает сервер» ---------- */
+  .strip{
+    background:var(--panel);border-bottom:1px solid var(--line);
+    padding:16px 0;font-size:14px;color:var(--muted);
+  }
+  .strip .wrap{display:flex;gap:12px;align-items:flex-start}
+  .strip .icon{color:var(--accent);flex:0 0 auto;margin-top:2px}
+  .strip code{
+    font:12px var(--mono);background:var(--panel-2);border:1px solid var(--line);
+    padding:1px 5px;border-radius:4px;color:#c3ced9;
+  }
+
+  /* ---------- секции ---------- */
+  section{padding:64px 0;border-bottom:1px solid var(--line)}
+  section:last-of-type{border-bottom:0}
+  h2{
+    font-size:clamp(24px,3.2vw,32px);letter-spacing:-.02em;line-height:1.2;
+    margin:0 0 10px;font-weight:700;
+  }
+  .sub{color:var(--muted);margin:0 0 34px;max-width:46em}
+  .eyebrow{
+    font:11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;
+    color:var(--accent-dim);margin:0 0 12px;
+  }
+
+  .cols-3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .card{
+    background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:20px;
+  }
+  .card h3{margin:0 0 8px;font-size:16px;letter-spacing:-.01em}
+  .card p{margin:0;color:var(--muted);font-size:14.5px}
+  .card .num{
+    font:600 11px var(--mono);color:var(--accent);border:1px solid var(--accent-dim);
+    border-radius:5px;padding:3px 6px;display:inline-block;margin-bottom:12px;
+  }
+  .pain h3{color:#e6edf3}
+  .pain .card{border-left:2px solid var(--line-2)}
+  .pain .card p strong{color:#c3ced9;font-weight:600}
+
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;counter-reset:s}
+  .step{position:relative;padding-top:46px}
+  .step::before{
+    counter-increment:s;content:counter(s);
+    position:absolute;top:0;left:0;width:32px;height:32px;border-radius:9px;
+    background:var(--panel-2);border:1px solid var(--line-2);
+    display:flex;align-items:center;justify-content:center;
+    font:600 14px var(--mono);color:var(--accent);
+  }
+  .step h3{margin:0 0 6px;font-size:16px}
+  .step p{margin:0;color:var(--muted);font-size:14.5px}
+
+  .feat{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .feat .card{display:flex;flex-direction:column;gap:8px}
+  .feat .ico{color:var(--accent);margin-bottom:2px}
+
+  table{width:100%;border-collapse:collapse;font-size:14.5px}
+  th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--dim);font:600 11px/1.4 var(--mono);letter-spacing:.08em;text-transform:uppercase}
+  td:first-child{color:#c3ced9;font-weight:500;white-space:nowrap}
+  td{color:var(--muted)}
+  tr:last-child td{border-bottom:0}
+  .table-wrap{border:1px solid var(--line);border-radius:11px;overflow:hidden;background:var(--panel)}
+
+  .vs{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+  .vs .card h3{font-family:var(--mono);font-size:14px;color:#c3ced9}
+  .vs .card.us{border-color:var(--accent-dim);background:linear-gradient(180deg,rgba(77,212,172,.06),transparent)}
+  .vs .card.us h3{color:var(--accent)}
+
+  /* ---------- видео ---------- */
+  .video{
+    position:relative;border:1px solid var(--line-2);border-radius:12px;overflow:hidden;
+    background:#000;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;
+  }
+  .video iframe{width:100%;height:100%;border:0;display:block}
+  .video .play{
+    display:flex;flex-direction:column;align-items:center;gap:14px;
+    background:none;border:0;cursor:pointer;color:var(--text);padding:0;
+  }
+  .video .play svg{opacity:.9}
+  .video .play span{font:13px var(--mono);color:var(--muted)}
+  .video-tabs{display:flex;gap:8px;margin-bottom:14px}
+
+  /* ---------- скачать ---------- */
+  .dl{display:grid;grid-template-columns:1.2fr 1fr;gap:18px;align-items:start}
+  .dl-main{background:linear-gradient(180deg,rgba(77,212,172,.07),transparent 70%),var(--panel);
+    border:1px solid var(--accent-dim);border-radius:12px;padding:24px}
+  .dl-main h3{margin:0 0 6px;font-size:18px}
+  .dl-main p{color:var(--muted);font-size:14px;margin:0 0 18px}
+  .dl-list{display:flex;flex-direction:column;gap:2px}
+  .dl-list a{
+    display:flex;justify-content:space-between;align-items:center;gap:10px;
+    padding:11px 12px;border-radius:8px;color:var(--text);font-size:14.5px;
+  }
+  .dl-list a:hover{background:var(--panel-2);text-decoration:none}
+  .dl-list .sz{font:12px var(--mono);color:var(--dim)}
+  .req{font-size:13px;color:var(--dim);margin-top:14px;line-height:1.6}
+
+  /* ---------- FAQ ---------- */
+  details{border-bottom:1px solid var(--line);padding:14px 0}
+  details:first-of-type{border-top:1px solid var(--line)}
+  summary{cursor:pointer;font-weight:600;font-size:15.5px;list-style:none;
+    display:flex;justify-content:space-between;gap:16px;align-items:center}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:"+";color:var(--accent);font:400 20px/1 var(--mono);flex:0 0 auto}
+  details[open] summary::after{content:"–"}
+  details p{color:var(--muted);font-size:14.5px;margin:10px 0 0;max-width:56em}
+
+  /* ---------- обратная связь ---------- */
+  .hint{font-size:12px;color:var(--dim)}
+
+  footer{padding:34px 0 48px;color:var(--dim);font-size:13.5px}
+  footer .wrap{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+  footer a{color:var(--muted)}
+  footer .sep{color:var(--line-2)}
+
+  @media (max-width:900px){
+    .hero-grid,.dl{grid-template-columns:1fr}
+    .hero-grid{gap:30px}
+    .cols-3,.steps,.feat,.vs{grid-template-columns:1fr}
+    .nav-links{display:none}
+    .hero{padding:40px 0 32px}
+    section{padding:46px 0}
+    .facts{font-size:11px}
+  }
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<!-- ======================= ШАПКА ======================= -->
+<header>
+  <div class="wrap nav">
+    <a class="brand" href="#top">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 2.5 21 7.5v9L12 21.5 3 16.5v-9L12 2.5Z" stroke="#4dd4ac" stroke-width="1.6" stroke-linejoin="round"/>
+        <path d="M3 7.5l9 5 9-5M12 12.5v9" stroke="#4dd4ac" stroke-width="1.6" stroke-linejoin="round" opacity=".55"/>
+      </svg>
+      <span>LLM Test Bench</span>
+    </a>
+    <nav class="nav-links">
+      <a href="#features" data-ru="Возможности" data-en="Features">Возможности</a>
+      <a href="#how" data-ru="Как работает" data-en="How it works">Как работает</a>
+      <a href="#download" data-ru="Скачать" data-en="Download">Скачать</a>
+      <a href="https://github.com/aleksandrreva-eng/llm-test-bench" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+    <div class="lang" role="group" aria-label="Язык">
+      <button type="button" data-lang="ru" class="on">RU</button>
+      <button type="button" data-lang="en">EN</button>
+    </div>
+    <a class="btn btn-primary btn-sm" href="#download" data-ru="Скачать" data-en="Download">Скачать</a>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- ======================= HERO ======================= -->
+<div class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <h1 data-ru="Числа вместо <em>ощущений</em>" data-en="Numbers, not <em>vibes</em>">Числа вместо <em>ощущений</em></h1>
+      <p class="lead"
+         data-ru="Стенд для локальных GGUF-моделей: 12 наборов, 120 кейсов, скорость префилла, генерации и расход видеопамяти — в одном отчёте. Прогон сохраняется, модели сравниваются покейсово."
+         data-en="A test bench for local GGUF models: 12 suites, 120 cases, prefill and generation speed, VRAM usage — all in one report. Every run is saved, models are compared case by case.">
+        Стенд для локальных GGUF-моделей: 12 наборов, 120 кейсов, скорость префилла, генерации и расход видеопамяти — в одном отчёте. Прогон сохраняется, модели сравниваются покейсово.
+      </p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="https://github.com/aleksandrreva-eng/llm-test-bench/releases/download/v1.0.3/LLMTestBench-1.0.3.msi"
+           data-ru="Скачать для Windows" data-en="Download for Windows">Скачать для Windows</a>
+        <a class="btn btn-ghost" href="https://github.com/aleksandrreva-eng/llm-test-bench" target="_blank" rel="noopener"
+           data-ru="Исходники на GitHub" data-en="Source on GitHub">Исходники на GitHub</a>
+      </div>
+      <div class="facts">
+        <span>Windows 10/11</span>
+        <span data-ru="бесплатно" data-en="free">бесплатно</span>
+        <span>MIT</span>
+        <span data-ru="60 МБ" data-en="60 MB">60 МБ</span>
+        <span data-ru="без регистрации" data-en="no sign-up">без регистрации</span>
+      </div>
+    </div>
+
+    <!-- Скриншот: положи рядом с index.html файл screenshot-testing.png -->
+    <div class="shot">
+      <div class="shot-bar">
+        <i class="dot"></i><i class="dot"></i><i class="dot"></i>
+        <span class="t">llmtestbench.exe — <span data-ru="Тестирование" data-en="Testing">Тестирование</span></span>
+      </div>
+      <img src="screenshots/testing.png" alt="LLM Test Bench interface: model, suite and run parameters selection"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <div class="shot-fallback" style="display:none">
+        <b data-ru="Сюда — скриншот интерфейса" data-en="Screenshot goes here">Сюда — скриншот интерфейса</b>
+        <span class="mono" data-ru="положи файл docs/screenshots/testing.png" data-en="put docs/screenshots/testing.png">положи файл docs/screenshots/testing.png</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================= ПОЛОСА: НЕ ТРОГАЕТ СЕРВЕР ======================= -->
+<div class="strip">
+  <div class="wrap">
+    <span class="icon" aria-hidden="true">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 3 4 6v6c0 4.4 3.4 8.3 8 9 4.6-.7 8-4.6 8-9V6l-8-3Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </span>
+    <div data-ru="Стенд не поднимает свой сервер и ничего не загружает. Модель грузит ваш лаунчер — llama.cpp, LM Studio, свой bat-файл. Стенд тестирует то, что уже отвечает на <code>127.0.0.1:8080</code>."
+         data-en="The bench starts no server and loads nothing. Your launcher loads the model — llama.cpp, LM Studio, your own script. The bench tests whatever already answers on <code>127.0.0.1:8080</code>.">
+      Стенд не поднимает свой сервер и ничего не загружает. Модель грузит ваш лаунчер — llama.cpp, LM Studio, свой bat-файл. Стенд тестирует то, что уже отвечает на <code>127.0.0.1:8080</code>.
+    </div>
+  </div>
+</div>
+
+<!-- ======================= ПРОБЛЕМА ======================= -->
+<section class="pain">
+  <div class="wrap">
+    <p class="eyebrow" data-ru="Проблема" data-en="The problem">Проблема</p>
+    <h2 data-ru="Как выбирают модель сегодня" data-en="How people pick a model today">Как выбирают модель сегодня</h2>
+    <p class="sub" data-ru="Три способа, и ни один не оставляет доказательств." data-en="Three ways, and none of them leaves evidence behind.">Три способа, и ни один не оставляет доказательств.</p>
+
+    <div class="cols-3">
+      <div class="card">
+        <h3 data-ru="Скачал, потыкал, решил" data-en="Download, poke, decide">Скачал, потыкал, решил</h3>
+        <p data-ru="Пять вопросов в чате — и вывод «вроде умная». Через неделю выясняется, что на арифметике в четыре шага она разваливается."
+           data-en="Five questions in a chat window and the verdict is “seems smart”. A week later it falls apart on four-step arithmetic.">Пять вопросов в чате — и вывод «вроде умная». Через неделю выясняется, что на арифметике в четыре шага она разваливается.</p>
+      </div>
+      <div class="card">
+        <h3 data-ru="Два окна рядом" data-en="Two windows side by side">Два окна рядом</h3>
+        <p data-ru="Сравнение на глаз: два чата, одни и те же вопросы, разница «в ощущении». Повторить этот опыт через месяц не получится."
+           data-en="Comparing by feel: same questions, “different vibe”. Good luck reproducing that next month.">Сравнение на глаз: два чата, одни и те же вопросы, разница «в ощущении». Повторить этот опыт через месяц не получится.</p>
+      </div>
+      <div class="card">
+        <h3 data-ru="Скрипт на коленке" data-en="A throwaway script">Скрипт на коленке</h3>
+        <p data-ru="Двадцать промптов в питоновском файле. Через месяц файла нет, модель обновилась, выводы — «мы вроде Qwen выбрали»."
+           data-en="Twenty prompts in a Python file. A month later the file is gone, the model has been updated, and the conclusion is “we went with Qwen, I think”.">Двадцать промптов в питоновском файле. Через месяц файла нет, модель обновилась, выводы — «мы вроде Qwen выбрали».</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= КАК РАБОТАЕТ ======================= -->
+<section id="how">
+  <div class="wrap">
+    <p class="eyebrow" data-ru="Как это работает" data-en="How it works">Как это работает</p>
+    <h2 data-ru="Три шага" data-en="Three steps">Три шага</h2>
+    <p class="sub" data-ru="От запущенной модели до отчёта — без настройки окружения." data-en="From a running model to a report — no environment setup.">От запущенной модели до отчёта — без настройки окружения.</p>
+
+    <div class="steps">
+      <div class="step">
+        <h3 data-ru="Сервер уже работает" data-en="Your server is already running">Сервер уже работает</h3>
+        <p data-ru="Модель загружена твоим лаунчером и отвечает на 127.0.0.1:8080. Стенд её видит и ничего не меняет в твоей среде."
+           data-en="The model is loaded by your launcher and answers on 127.0.0.1:8080. The bench sees it and changes nothing in your setup.">Модель загружена твоим лаунчером и отвечает на 127.0.0.1:8080. Стенд её видит и ничего не меняет в твоей среде.</p>
+      </div>
+      <div class="step">
+        <h3 data-ru="Отмечаешь наборы" data-en="Pick your suites">Отмечаешь наборы</h3>
+        <p data-ru="Двенадцать наборов: рассуждения, код, русский язык, скорость, вызов функций, устойчивость к мусору в промпте. Можно все, можно один, можно ограничить число кейсов."
+           data-en="Twelve suites: reasoning, code, Russian, speed, function calling, robustness to prompt noise. All, one, or a limited number of cases.">Двенадцать наборов: рассуждения, код, русский язык, скорость, вызов функций, устойчивость к мусору в промпте. Можно все, можно один, можно ограничить число кейсов.</p>
+      </div>
+      <div class="step">
+        <h3 data-ru="Получаешь отчёт" data-en="Get the report">Получаешь отчёт</h3>
+        <p data-ru="Точность по каждому набору, tok/s префилла и генерации, TTFT, расход VRAM. HTML-отчёт, JSON, запись в историю — и сравнение с прошлыми прогонами."
+           data-en="Accuracy per suite, prefill and generation tok/s, TTFT, VRAM usage. HTML report, JSON, history entry — and a comparison against previous runs.">Точность по каждому набору, tok/s префилла и генерации, TTFT, расход VRAM. HTML-отчёт, JSON, запись в историю — и сравнение с прошлыми прогонами.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= ВОЗМОЖНОСТИ ======================= -->
+<section id="features">
+  <div class="wrap">
+    <p class="eyebrow" data-ru="Возможности" data-en="Features">Возможности</p>
+    <h2 data-ru="Шесть вещей, которых нет в чате" data-en="Six things a chat window cannot do">Шесть вещей, которых нет в чате</h2>
+    <p class="sub" data-ru="Каждая карточка — проверяемый факт, а не прилагательное." data-en="Every card is a verifiable fact, not an adjective.">Каждая карточка — проверяемый факт, а не прилагательное.</p>
+
+    <div class="feat">
+      <div class="card">
+        <span class="ico">◈</span>
+        <h3 data-ru="Проверки по правилам" data-en="Rule-based checks">Проверки по правилам</h3>
+        <p data-ru="Судья-модель зовётся только там, где без неё нельзя. Результат не зависит от удачи."
+           data-en="A judge model is called only where there is no way around it. Results do not depend on luck.">Судья-модель зовётся только там, где без неё нельзя. Результат не зависит от удачи.</p>
+      </div>
+      <div class="card">
+        <span class="ico">◎</span>
+        <h3 data-ru="Каждый провал виден целиком" data-en="Every failure in full">Каждый провал виден целиком</h3>
+        <p data-ru="Вопрос, ответ модели, разбор проверки. Не «7 из 10», а «вот три кейса, где сломалось»."
+           data-en="The prompt, the model answer, the check breakdown. Not “7 out of 10” but “here are the three cases that broke”.">Вопрос, ответ модели, разбор проверки. Не «7 из 10», а «вот три кейса, где сломалось».</p>
+      </div>
+      <div class="card">
+        <span class="ico">⚡</span>
+        <h3 data-ru="Скорость и качество в одной таблице" data-en="Speed and quality in one table">Скорость и качество в одной таблице</h3>
+        <p data-ru="Префилл, генерация, TTFT, latency — рядом с точностью по наборам."
+           data-en="Prefill, generation, TTFT, latency — right next to accuracy per suite.">Префилл, генерация, TTFT, latency — рядом с точностью по наборам.</p>
+      </div>
+      <div class="card">
+        <span class="ico">▤</span>
+        <h3 data-ru="Память модели" data-en="VRAM usage">Память модели</h3>
+        <p data-ru="Сколько занимает, влезает ли в твою карту, что происходит с контекстом."
+           data-en="How much it takes, whether it fits your GPU, what happens with context.">Сколько занимает, влезает ли в твою карту, что происходит с контекстом.</p>
+      </div>
+      <div class="card">
+        <span class="ico">⧉</span>
+        <h3 data-ru="История и сравнение" data-en="History and comparison">История и сравнение</h3>
+        <p data-ru="Прогон целиком, а не файл. Сравнение покейсово и предупреждение, если версии наборов разные."
+           data-en="A run as a whole, not a file. Case-by-case diff and a warning when suite versions differ.">Прогон целиком, а не файл. Сравнение покейсово и предупреждение, если версии наборов разные.</p>
+      </div>
+      <div class="card">
+        <span class="ico">◱</span>
+        <h3 data-ru="Отчёты для людей" data-en="Reports for humans">Отчёты для людей</h3>
+        <p data-ru="HTML, тёмная и светлая темы, экспорт в CSV. Показать коллеге — не скриншот в чат."
+           data-en="HTML, dark and light themes, CSV export. Show a colleague a report, not a screenshot.">HTML, тёмная и светлая темы, экспорт в CSV. Показать коллеге — не скриншот в чат.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= МЕТРИКИ ======================= -->
+<section>
+  <div class="wrap">
+    <p class="eyebrow" data-ru="Что показывают числа" data-en="What the numbers show">Что показывают числа</p>
+    <h2 data-ru="Не «умная» или «тупая», а по пунктам" data-en="Not “smart” or “dumb”, but point by point">Не «умная» или «тупая», а по пунктам</h2>
+    <p class="sub" data-ru="Метрики прогона — строки сводной таблицы. Лучшее значение помечается, различия видны сразу."
+       data-en="Run metrics are rows in the summary table. The best value is marked, differences are visible at a glance.">Метрики прогона — строки сводной таблицы. Лучшее значение помечается, различия видны сразу.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th data-ru="Метрика" data-en="Metric">Метрика</th>
+            <th data-ru="Зачем" data-en="Why it matters">Зачем</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td data-ru="Точность по набору" data-en="Accuracy per suite">Точность по набору</td>
+              <td data-ru="Где именно модель сильна, а где проваливается." data-en="Exactly where the model is strong and where it breaks.">Где именно модель сильна, а где проваливается.</td></tr>
+          <tr><td data-ru="Tok/s префилла" data-en="Prefill tok/s">Tok/s префилла</td>
+              <td data-ru="Как быстро модель «читает» длинный промпт." data-en="How fast the model “reads” a long prompt.">Как быстро модель «читает» длинный промпт.</td></tr>
+          <tr><td data-ru="Tok/s генерации" data-en="Generation tok/s">Tok/s генерации</td>
+              <td data-ru="Как быстро она пишет ответ." data-en="How fast it writes the answer.">Как быстро она пишет ответ.</td></tr>
+          <tr><td>TTFT</td>
+              <td data-ru="Сколько ждать первого токена." data-en="How long until the first token.">Сколько ждать первого токена.</td></tr>
+          <tr><td>VRAM</td>
+              <td data-ru="Влезет ли в карту вместе с контекстом." data-en="Whether it fits your GPU along with the context.">Влезет ли в карту вместе с контекстом.</td></tr>
+          <tr><td data-ru="Сбои стенда и пустые ответы" data-en="Bench failures and empty answers">Сбои стенда и пустые ответы</td>
+              <td data-ru="Отделить плохую модель от плохого прогона." data-en="Tells a bad model apart from a bad run.">Отделить плохую модель от плохого прогона.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= ЧЕМ НЕ ОЧЕРЕДНОЙ БЕНЧМАРК ======================= -->
+<section>
+  <div class="wrap">
+    <p class="eyebrow" data-ru="Отстройка" data-en="Positioning">Отстройка</p>
+    <h2 data-ru="Чем это не очередной бенчмарк" data-en="Why this is not just another benchmark">Чем это не очередной бенчмарк</h2>
+    <p class="sub" data-ru="Инструменты ниже хорошие. Они просто отвечают на другие вопросы."
+       data-en="The tools below are good. They simply answer different questions.">Инструменты ниже хорошие. Они просто отвечают на другие вопросы.</p>
+
+    <div class="vs">
+      <div class="card">
+        <h3>lm-evaluation-harness</h3>
+        <p data-ru="Отвечает «насколько модель умна вообще» — на академических датасетах. Здесь — «как ведёт себя этот квант на твоей карте»."
+           data-en="Answers “how smart the model is in general”, on academic datasets. Here it is “how this particular quant behaves on your GPU”.">Отвечает «насколько модель умна вообще» — на академических датасетах. Здесь — «как ведёт себя этот квант на твоей карте».</p>
+      </div>
+      <div class="card">
+        <h3>llama-bench</h3>
+        <p data-ru="Меряет скорость. Отлично меряет. Но ничего не знает о качестве ответов."
+           data-en="Measures speed. Measures it well. Knows nothing about answer quality.">Меряет скорость. Отлично меряет. Но ничего не знает о качестве ответов.</p>
+      </div>
+      <div class="card">
+        <h3>Promptfoo</h3>
+        <p data-ru="Тестирует промпты в приложении и живёт в CI. Здесь — сама модель и её железо."
+           data-en="Tests prompts in an application and lives in CI. Here it is the model itself and its hardware.">Тестирует промпты в приложении и живёт в CI. Здесь — сама модель и её железо.</p>
+      </div>
+      <div class="card us">
+        <h3>LLM Test Bench</h3>
+        <p data-ru="120 кейсов против твоей модели, качество и скорость в одном прогоне, воспроизводимо и покейсово."
+           data-en="120 cases against your model, quality and speed in a single run, reproducible and case by case.">120 кейсов против твоей модели, качество и скорость в одном прогоне, воспроизводимо и покейсово.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= ВИДЕО ======================= -->
+<section>
+  <div class="wrap">
+    <p class="eyebrow" data-ru="Минута на посмотреть" data-en="One minute">Минута на посмотреть</p>
+    <h2 data-ru="Как это выглядит в движении" data-en="How it looks in motion">Как это выглядит в движении</h2>
+    <div class="video-tabs">
+      <button class="btn btn-ghost btn-sm" type="button" data-video="ru">Русский</button>
+      <button class="btn btn-ghost btn-sm" type="button" data-video="en">English</button>
+    </div>
+    <div class="video" id="video">
+      <button class="play" type="button" id="play">
+        <svg width="54" height="54" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="12" cy="12" r="10.5" stroke="#4dd4ac" stroke-width="1.4" opacity=".5"/>
+          <path d="M10 8.5l6 3.5-6 3.5v-7Z" fill="#4dd4ac"/>
+        </svg>
+        <span data-ru="Смотреть на YouTube" data-en="Watch on YouTube">Смотреть на YouTube</span>
+      </button>
+    </div>
+    <p class="hint" style="margin-top:10px" data-ru="Видео грузится только по нажатию — чтобы страница открывалась быстро."
+       data-en="The video loads only on click, so the page opens fast.">Видео грузится только по нажатию — чтобы страница открывалась быстро.</p>
+  </div>
+</section>
+
+<!-- ======================= СКАЧАТЬ ======================= -->
+<section id="download">
+  <div class="wrap">
+    <p class="eyebrow" data-ru="Скачать" data-en="Download">Скачать</p>
+    <h2 data-ru="Windows, бесплатно, MIT" data-en="Windows, free, MIT">Windows, бесплатно, MIT</h2>
+    <p class="sub" data-ru="Без регистрации, без ключа. Ставится за минуту." data-en="No sign-up, no key. Installs in a minute.">Без регистрации, без ключа. Ставится за минуту.</p>
+
+    <div class="dl">
+      <div class="dl-main">
+        <h3 data-ru="Установщик" data-en="Installer">Установщик</h3>
+        <p data-ru="Обычная установка, ярлык в меню «Пуск». Версия 1.0.3." data-en="Standard install, Start menu shortcut. Version 1.0.3.">Обычная установка, ярлык в меню «Пуск». Версия 1.0.3.</p>
+        <a class="btn btn-primary" href="https://github.com/aleksandrreva-eng/llm-test-bench/releases/download/v1.0.3/LLMTestBench-1.0.3.msi"
+           data-ru="Скачать MSI · 60 МБ" data-en="Download MSI · 60 MB">Скачать MSI · 60 МБ</a>
+        <p class="req" data-ru="Требования: Windows 10/11 и работающий llama-server на 127.0.0.1:8080. Python не нужен — только если собираешь из исходников (3.13)."
+           data-en="Requires Windows 10/11 and a running llama-server on 127.0.0.1:8080. Python is not needed unless you build from source (3.13).">Требования: Windows 10/11 и работающий llama-server на 127.0.0.1:8080. Python не нужен — только если собираешь из исходников (3.13).</p>
+      </div>
+
+      <div class="card">
+        <div class="dl-list">
+          <a href="https://github.com/aleksandrreva-eng/llm-test-bench/releases/download/v1.0.3/LLMTestBench.exe" target="_blank" rel="noopener">
+            <span data-ru="Портативная версия (.exe)" data-en="Portable (.exe)">Портативная версия (.exe)</span>
+            <span class="sz">60 MB</span>
+          </a>
+          <a href="https://github.com/aleksandrreva-eng/llm-test-bench/releases/download/v1.0.3/LLMTestBench-1.0.3-manual-ru.pdf" target="_blank" rel="noopener">
+            <span data-ru="Руководство (PDF)" data-en="User manual (PDF, RU)">Руководство (PDF)</span>
+            <span class="sz">PDF</span>
+          </a>
+          <a href="https://github.com/aleksandrreva-eng/llm-test-bench" target="_blank" rel="noopener">
+            <span data-ru="Исходники (MIT)" data-en="Source (MIT)">Исходники (MIT)</span>
+            <span class="sz">GitHub</span>
+          </a>
+          <a href="https://github.com/aleksandrreva-eng/llm-test-bench/releases" target="_blank" rel="noopener">
+            <span data-ru="Все релизы" data-en="All releases">Все релизы</span>
+            <span class="sz">→</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= FAQ ======================= -->
+<section>
+  <div class="wrap">
+    <p class="eyebrow">FAQ</p>
+    <h2 data-ru="Вопросы, которые задают первыми" data-en="Questions people ask first">Вопросы, которые задают первыми</h2>
+    <div style="margin-top:26px">
+
+      <details>
+        <summary data-ru="Он поднимет свой сервер?" data-en="Will it start its own server?">Он поднимет свой сервер?</summary>
+        <p data-ru="Нет. Стенд работает по HTTP с внешним llama-server. Модель загружает ваш лаунчер, стенд только отправляет запросы и читает ответы. Ваш конфиг он не трогает."
+           data-en="No. The bench talks HTTP to an external llama-server. Your launcher loads the model, the bench only sends requests and reads answers. It does not touch your config.">Нет. Стенд работает по HTTP с внешним llama-server. Модель загружает ваш лаунчер, стенд только отправляет запросы и читает ответы. Ваш конфиг он не трогает.</p>
+      </details>
+
+      <details>
+        <summary data-ru="Linux или macOS?" data-en="Linux or macOS?">Linux или macOS?</summary>
+        <p data-ru="Сейчас только Windows 10/11. Исходники открыты под MIT — если соберёшь под Linux, присылай pull request."
+           data-en="Windows 10/11 only right now. The source is MIT-licensed — if you build it for Linux, send a pull request.">Сейчас только Windows 10/11. Исходники открыты под MIT — если соберёшь под Linux, присылай pull request.</p>
+      </details>
+
+      <details>
+        <summary data-ru="Нужен Python?" data-en="Do I need Python?">Нужен Python?</summary>
+        <p data-ru="Нет, если берёшь .exe или MSI. Python 3.13 нужен только для сборки из исходников."
+           data-en="Not if you take the .exe or the MSI. Python 3.13 is only needed to build from source.">Нет, если берёшь .exe или MSI. Python 3.13 нужен только для сборки из исходников.</p>
+      </details>
+
+      <details>
+        <summary data-ru="У меня 8 ГБ VRAM, хватит?" data-en="Is 8 GB of VRAM enough?">У меня 8 ГБ VRAM, хватит?</summary>
+        <p data-ru="Наборы — это промпты, а не модели. Память занимает модель, которую ты уже держишь. Для слабых машин есть лимит кейсов на набор и запас токенов на рассуждение."
+           data-en="Suites are prompts, not models. The memory is taken by the model you are already running. For smaller GPUs there is a per-suite case limit and a reasoning token allowance.">Наборы — это промпты, а не модели. Память занимает модель, которую ты уже держишь. Для слабых машин есть лимит кейсов на набор и запас токенов на рассуждение.</p>
+      </details>
+
+      <details>
+        <summary data-ru="У меня LM Studio — он не помешает?" data-en="I use LM Studio — will they conflict?">У меня LM Studio — он не помешает?</summary>
+        <p data-ru="Наоборот: LM Studio поднимает сервер, стенд его тестирует. Стенд не конкурирует с лаунчером, он работает поверх него."
+           data-en="The opposite: LM Studio runs the server, the bench tests it. The bench does not compete with your launcher, it works on top of it.">Наоборот: LM Studio поднимает сервер, стенд его тестирует. Стенд не конкурирует с лаунчером, он работает поверх него.</p>
+      </details>
+
+      <details>
+        <summary data-ru="А кто проверял сами тесты?" data-en="Who validated the tests themselves?">А кто проверял сами тесты?</summary>
+        <p data-ru="Каждый кейс виден целиком: вопрос, ответ, разбор проверки. Наборы версионированы, проверки описаны. Нашёл плохой кейс — напиши через форму ниже, это баг."
+           data-en="Every case is visible in full: prompt, answer, check breakdown. Suites are versioned, checks are documented. Found a bad case? Open an issue — that is a bug.">Каждый кейс виден целиком: вопрос, ответ, разбор проверки. Наборы версионированы, проверки описаны. Нашёл плохой кейс — напиши в issues, это баг.</p>
+      </details>
+
+      <details>
+        <summary data-ru="Это правда бесплатно?" data-en="Is it really free?">Это правда бесплатно?</summary>
+        <p data-ru="Да. MIT, без регистрации и ключей. Сделано одним человеком."
+           data-en="Yes. MIT, no sign-up, no keys. Built by one person.">Да. MIT, без регистрации и ключей. Сделано одним человеком.</p>
+      </details>
+
+    </div>
+  </div>
+</section>
+
+<!-- ======================= ОБРАТНАЯ СВЯЗЬ ======================= -->
+<section id="feedback">
+  <div class="wrap">
+    <p class="eyebrow" data-ru="Обратная связь" data-en="Feedback">Обратная связь</p>
+    <h2 data-ru="Нашёл плохой кейс или чего-то не хватает?" data-en="Found a bad case or something missing?">Нашёл плохой кейс или чего-то не хватает?</h2>
+    <p class="sub" data-ru="Пиши в issues — читаю всё сам. Для кейса хватит трёх вещей: вопрос, ожидаемый ответ и то, что ответила модель."
+       data-en="Open an issue — I read everything myself. For a case, three things are enough: the prompt, the expected answer, and what the model actually said.">Пиши в issues — читаю всё сам. Для кейса хватит трёх вещей: вопрос, ожидаемый ответ и то, что ответила модель.</p>
+
+    <div class="cta-row">
+      <a class="btn btn-primary" href="https://github.com/aleksandrreva-eng/llm-test-bench/issues/new" target="_blank" rel="noopener"
+         data-ru="Открыть issue" data-en="Open an issue">Открыть issue</a>
+      <a class="btn btn-ghost" href="https://github.com/aleksandrreva-eng/llm-test-bench/issues" target="_blank" rel="noopener"
+         data-ru="Что уже обсуждают" data-en="See open issues">Что уже обсуждают</a>
+    </div>
+    <p class="hint" style="margin-top:14px"
+       data-ru="Нужен GitHub-аккаунт — другого способа написать нет. Зато ответ не теряется и видно, что проект живой."
+       data-en="A GitHub account is required — there is no other way to write. In exchange, answers do not get lost and the project looks alive.">Нужен GitHub-аккаунт — другого способа написать нет. Зато ответ не теряется и видно, что проект живой.</p>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>LLM Test Bench</span>
+    <span class="sep">·</span>
+    <span>MIT</span>
+    <span class="sep">·</span>
+    <span data-ru="сделано одним человеком" data-en="built by one person">сделано одним человеком</span>
+    <span class="sep">·</span>
+    <a href="https://github.com/aleksandrreva-eng/llm-test-bench" target="_blank" rel="noopener">GitHub</a>
+    <span class="sep">·</span>
+    <a href="https://youtu.be/0eJbCHqIhW0" target="_blank" rel="noopener">YouTube</a>
+  </div>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  // ---------- язык ----------
+  var currentLang = 'ru';
+
+  function applyLang(lang) {
+    currentLang = lang;
+    document.documentElement.lang = lang;
+    document.querySelectorAll('[data-ru]').forEach(function (el) {
+      var value = el.getAttribute('data-' + lang);
+      if (value === null) return;
+      // разметка внутри текстов своя, доверенная — innerHTML допустим
+      el.innerHTML = value;
+    });
+    document.querySelectorAll('.lang button').forEach(function (b) {
+      b.classList.toggle('on', b.getAttribute('data-lang') === lang);
+    });
+    try { localStorage.setItem('llmb-lang', lang); } catch (e) {}
+  }
+
+  document.querySelectorAll('.lang button').forEach(function (b) {
+    b.addEventListener('click', function () { applyLang(b.getAttribute('data-lang')); });
+  });
+
+  try {
+    var saved = localStorage.getItem('llmb-lang');
+    if (saved === 'en' || saved === 'ru') applyLang(saved);
+    else if ((navigator.language || '').slice(0, 2) === 'en') applyLang('en');
+  } catch (e) {}
+
+  // ---------- видео ----------
+  var VIDEOS = {
+    ru: 'https://www.youtube-nocookie.com/embed/0eJbCHqIhW0?autoplay=1&rel=0',
+    en: 'https://www.youtube-nocookie.com/embed/Laa34Zas8gQ?autoplay=1&rel=0'
+  };
+  var videoBox = document.getElementById('video');
+
+  function loadVideo(lang) {
+    var iframe = document.createElement('iframe');
+    iframe.src = VIDEOS[lang] || VIDEOS.ru;
+    iframe.title = 'LLM Test Bench';
+    iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; picture-in-picture';
+    iframe.allowFullscreen = true;
+    videoBox.innerHTML = '';
+    videoBox.appendChild(iframe);
+  }
+
+  document.getElementById('play').addEventListener('click', function () {
+    loadVideo(currentLang === 'en' ? 'en' : 'ru');
+  });
+
+  document.querySelectorAll('[data-video]').forEach(function (b) {
+    b.addEventListener('click', function () { loadVideo(b.getAttribute('data-video')); });
+  });
+
+})();
+</script>
+</body>
+</html>
